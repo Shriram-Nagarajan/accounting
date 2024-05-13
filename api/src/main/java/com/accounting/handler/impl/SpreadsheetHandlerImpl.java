@@ -2,30 +2,53 @@ package com.accounting.handler.impl;
 
 import static com.accounting.util.FileUtil.getFileExtension;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.DateUtil;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.accounting.dao.TransactionsDao;
 import com.accounting.handler.FileHandler;
+import com.accounting.model.TransactionRecord;
 
 @Service
 public class SpreadsheetHandlerImpl implements FileHandler{
 
 	private static final String SPREADSHEET_ALLOWED_EXTN = "spreadsheet.allowed.extensions";
 	
+	//TODO: Make it dynamic
+	private static final long DEFAULT_ACCOUNT_ID = 1;
+	
 	private final Environment env;
 	
-	public SpreadsheetHandlerImpl(Environment env) {
+	private final TransactionsDao transactionsDao;
+	
+	public SpreadsheetHandlerImpl(Environment env, TransactionsDao transactionsDao) {
 		this.env = env;
+		this.transactionsDao = transactionsDao;
 	}
 	
 	@Override
@@ -42,14 +65,119 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 			Path destinationFile = Paths.get(destinationPath ,file.getOriginalFilename())
 					.normalize().toAbsolutePath();
 			try (InputStream inputStream = file.getInputStream()) {
-				return Files.copy(inputStream, destinationFile,
-					StandardCopyOption.REPLACE_EXISTING) > 0 ? "SUCCESS" : "WRITE_ERROR";
+				
+				//TODO: Bad design, decouple code
+				if(Files.copy(inputStream, destinationFile,
+					StandardCopyOption.REPLACE_EXISTING) > 0) {
+					var txnRecords = parseTxnRecords(destinationFile.toString());
+					if(txnRecords == null || txnRecords.isEmpty()) {
+						return "NO_VALID_RECORDS_FOUND_IN_FILE";
+					}	else {
+						int rowsInserted = transactionsDao.saveTransactions(DEFAULT_ACCOUNT_ID, txnRecords);
+						return rowsInserted == txnRecords.size() ? "SUCCESS" : (txnRecords.size() - rowsInserted) + " row(s) failed to save!";
+					}
+				}
+				else {
+					return "WRITE_ERROR";
+				}
 			}
 		}
 		catch (IOException e) {
 			System.out.println("Failed to store file."+ e);
 			return "UNEXPECTED_ERROR";
 		}
+	}
+	
+	@Override
+	public List<TransactionRecord> parseTxnRecords(String filePath) {
+		Map<String, Integer> columnMapping = new HashMap<String, Integer>();
+		List<TransactionRecord> txnRecords = new ArrayList<TransactionRecord>();
+
+		Workbook workbook = null;
+		try {
+			workbook = WorkbookFactory.create(new File(filePath));
+			Sheet sheet = workbook.getSheetAt(0); // Assuming the first sheet
+			// Assuming headers are in the first row
+			Row headerRow = sheet.getRow(1);
+			if (headerRow != null) {
+				int columnCount = headerRow.getLastCellNum();
+				for (int i = 0; i < columnCount; i++) {
+					Cell cell = headerRow.getCell(i);
+					if (cell != null && !cell.getStringCellValue().isBlank()) {
+						String header = cell.getStringCellValue();
+						System.out.println("Header in column " + (i) + ": " + header);
+						columnMapping.put(header, i);
+					}
+				}
+			}
+
+			for (int rowNum = 3; rowNum < sheet.getPhysicalNumberOfRows(); rowNum++) {
+				Row row = sheet.getRow(rowNum);
+				TransactionRecord record = new TransactionRecord();
+//			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YY");
+				Cell dateCell = row.getCell(columnMapping.get("Date"));
+//			cell.setCellType(CellType.STRING)
+				if (dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
+					// If it's a date cell, then retrieve the date value
+					Date date = dateCell.getDateCellValue();
+					record.setDate(date);
+//                System.out.println(rowNum+"::Number::Date from Excel: " + date);
+				} else if (dateCell.getCellType() == CellType.STRING) {
+					// If it's a string cell, then parse the string as a date
+					String dateString = dateCell.getStringCellValue();
+					SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
+					Date date = dateFormat.parse(dateString);
+//                System.out.println(rowNum+"::String::Date from Excel: " + date);
+					record.setDate(date);
+				} else {
+					System.out.println("The cell is not a valid date");
+				}
+				Cell descCell = row.getCell(columnMapping.get("Narration"));
+				record.setDescription(descCell.getStringCellValue());
+
+				// Format the cell value
+				Cell txnRefNumCell = row.getCell(columnMapping.get("Chq./Ref.No."));
+				String txnRefNum = txnRefNumCell.getCellType() == CellType.NUMERIC
+						? String.valueOf(Double.valueOf(txnRefNumCell.getNumericCellValue()).longValue())
+						: txnRefNumCell.getStringCellValue();
+				record.setTxnRefNumber(txnRefNum);
+
+				Cell wdAmtCell = row.getCell(columnMapping.get("Withdrawal Amt."));
+				Cell depAmtCell = row.getCell(columnMapping.get("Deposit Amt."));
+
+				boolean creditTxn = depAmtCell != null && depAmtCell.getNumericCellValue() != 0.0;
+				boolean debitTxn = wdAmtCell != null && wdAmtCell.getNumericCellValue() != 0.0;
+
+				if (!creditTxn && !debitTxn) {
+					System.err.println("Must be a credit or debit txn..");
+					return List.of();
+				}
+
+				record.setCreditTxn(creditTxn);
+				record.setAmount(creditTxn ? BigDecimal.valueOf(depAmtCell.getNumericCellValue())
+						: BigDecimal.valueOf(wdAmtCell.getNumericCellValue()));
+
+				record.setReversalTxn(record.getAmount().doubleValue() < 0.0);
+
+				txnRecords.add(record);
+			}
+			txnRecords.stream().forEach(record -> {
+				System.out.println(record);
+			});
+
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParseException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				workbook.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		return txnRecords;
 	}
 	
 	private boolean isAllowed(MultipartFile file) {

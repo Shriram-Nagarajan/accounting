@@ -37,8 +37,8 @@ public class AccountingApplication {
 		};
 	}
 
-    @Bean
-    DataSource getUserDataSource() {
+    @Bean("usersDataSource")
+    DataSource usersDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/users");
@@ -47,8 +47,8 @@ public class AccountingApplication {
         return dataSource;
 	}
     
-    @Bean
-    DataSource getAccountsDataSource() {
+    @Bean("accountsDataSource")
+    DataSource accountsDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/accounts");

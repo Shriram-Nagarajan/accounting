@@ -20,16 +20,16 @@ public class UsersDaoImpl implements UsersDao {
 	@Autowired
 	private Environment env;
 	
-	private JdbcTemplate userTemplate;
+	private JdbcTemplate usersTemplate;
 	
-	public UsersDaoImpl(DataSource userDataSource) {
-		userTemplate = new JdbcTemplate(userDataSource);
+	public UsersDaoImpl(DataSource usersDataSource) {
+		usersTemplate = new JdbcTemplate(usersDataSource);
 	}
 
 	@Override
 	public List<User> getAllUsers() {
 		String query = env.getProperty("get_all_users");
-		List<Map<String, Object>> userList = userTemplate.queryForList(query);
+		List<Map<String, Object>> userList = usersTemplate.queryForList(query);
 		List<User> allUsers = new ArrayList<User>();
 		if(userList != null && !userList.isEmpty()) {
 			for(Map<String, Object> eachUser: userList) {
