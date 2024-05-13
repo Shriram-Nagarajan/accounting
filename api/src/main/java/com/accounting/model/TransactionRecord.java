@@ -1,12 +1,12 @@
 package com.accounting.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Date;
 
 public class TransactionRecord {
 	
 	private String txnRefNumber;
-	private LocalDate date;
+	private Date date;
 	private String description;
 	private boolean creditTxn;
 	private BigDecimal amount;
@@ -18,10 +18,10 @@ public class TransactionRecord {
 	public void setTxnRefNumber(String txnRefNumber) {
 		this.txnRefNumber = txnRefNumber;
 	}
-	public LocalDate getDate() {
+	public Date getDate() {
 		return date;
 	}
-	public void setDate(LocalDate date) {
+	public void setDate(Date date) {
 		this.date = date;
 	}
 	public String getDescription() {
@@ -48,5 +48,7 @@ public class TransactionRecord {
 	public void setReversalTxn(boolean reversalTxn) {
 		this.reversalTxn = reversalTxn;
 	}
-	
+	public String toString() {
+		return txnRefNumber + " " + date.toString() + " " + description + " " + amount + " " + (creditTxn ? "Cr" : "Dr");
+	}
 }

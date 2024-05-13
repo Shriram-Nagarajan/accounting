@@ -6,3 +6,37 @@ CREATE TABLE users.app_users (
     `password` VARCHAR(100),
     email_id VARCHAR(400)
 )  CHARSET=UTF8MB4 , COLLATE = UTF8MB4_UNICODE_CI;
+
+drop table if exists accounts.`account_details`;
+CREATE TABLE IF NOT EXISTS accounts.`account_details` (
+    `account_id` BIGINT primary key auto_increment,
+    `account_number` VARCHAR(50) NOT NULL,
+    `name` varchar(100) NOT NULL,
+    INDEX `idx_account_number` (`account_number`)
+);
+
+drop table if exists accounts.`transactions`;
+CREATE TABLE IF NOT EXISTS accounts.`transactions` (
+    `transaction_id` BIGINT NOT NULL AUTO_INCREMENT,
+    `transaction_ref_num` VARCHAR(200),
+    `account_id` bigint DEFAULT NULL,
+    `transaction_date` DATE,
+    `description` VARCHAR(300) DEFAULT NULL,
+    `credit_txn` BOOL NOT NULL,
+    `amount` DOUBLE NOT NULL,
+    `reversal_txn` BOOL NOT NULL,
+    PRIMARY KEY (`transaction_id`),
+    INDEX `idx_transaction_ref_num` (`transaction_ref_num`),
+    INDEX `idx_transaction_date` (`transaction_date`)
+	CONSTRAINT `fk_account_id` FOREIGN KEY (`account_id`) REFERENCES `account_details` (`account_id`)
+)  DEFAULT CHARSET=UTF8MB4 COLLATE = UTF8MB4_UNICODE_CI;
+
+drop table if exists accounts.`expense_details`;
+CREATE TABLE IF NOT EXISTS accounts.`expense_details` (
+    `transaction_id` BIGINT NOT NULL,
+    `category` VARCHAR(100) NOT NULL,
+    PRIMARY KEY (`transaction_id`),
+    INDEX `idx_category` (`category`),
+    CONSTRAINT `transaction_id` FOREIGN KEY (`transaction_id`)
+        REFERENCES transactions (transaction_id)
+);

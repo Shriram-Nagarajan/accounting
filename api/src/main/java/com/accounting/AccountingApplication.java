@@ -46,5 +46,15 @@ public class AccountingApplication {
         dataSource.setPassword("root");
         return dataSource;
 	}
+    
+    @Bean
+    DataSource getAccountsDataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/accounts");
+        dataSource.setUsername("shriram");
+        dataSource.setPassword("root");
+        return dataSource;
+	}
 
 }
