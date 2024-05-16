@@ -8,6 +8,8 @@ public interface TransactionsDao {
 	
 	public int saveTransactions(long accountId, List<TransactionRecord> transactionRecordList);
 	
+	public int deleteTransactions(long accountId);
+	
 	public List<TransactionRecord> getTransaction(long accountId);
 
 }

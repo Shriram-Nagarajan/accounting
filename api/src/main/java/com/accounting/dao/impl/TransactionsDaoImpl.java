@@ -69,4 +69,15 @@ public class TransactionsDaoImpl implements TransactionsDao {
 		return null;
 	}
 
+	@SuppressWarnings("serial")
+	@Override
+	@Transactional
+	public int deleteTransactions(long accountId) {
+		String query = env.getProperty("delete_transactions");
+		if(query != null && !query.isBlank() && accountId > 0) {
+			return accountsTemplate.update(query, accountId);
+		}
+		return 0;
+	}
+
 }

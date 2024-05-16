@@ -73,6 +73,7 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 					if(txnRecords == null || txnRecords.isEmpty()) {
 						return "NO_VALID_RECORDS_FOUND_IN_FILE";
 					}	else {
+						transactionsDao.deleteTransactions(DEFAULT_ACCOUNT_ID);
 						int rowsInserted = transactionsDao.saveTransactions(DEFAULT_ACCOUNT_ID, txnRecords);
 						return rowsInserted == txnRecords.size() ? "SUCCESS" : (txnRecords.size() - rowsInserted) + " row(s) failed to save!";
 					}
