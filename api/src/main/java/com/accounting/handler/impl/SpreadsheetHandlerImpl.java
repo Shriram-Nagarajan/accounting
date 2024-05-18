@@ -30,8 +30,9 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.accounting.dao.TransactionsDao;
 import com.accounting.handler.FileHandler;
+import com.accounting.handler.TransactionsHandler;
+import com.accounting.model.ExpenseDetails;
 import com.accounting.model.TransactionRecord;
 
 @Service
@@ -39,16 +40,13 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 
 	private static final String SPREADSHEET_ALLOWED_EXTN = "spreadsheet.allowed.extensions";
 	
-	//TODO: Make it dynamic
-	private static final long DEFAULT_ACCOUNT_ID = 1;
-	
 	private final Environment env;
 	
-	private final TransactionsDao transactionsDao;
+	private final TransactionsHandler transactionsHandler;
 	
-	public SpreadsheetHandlerImpl(Environment env, TransactionsDao transactionsDao) {
+	public SpreadsheetHandlerImpl(Environment env, TransactionsHandler transactionsHandler) {
 		this.env = env;
-		this.transactionsDao = transactionsDao;
+		this.transactionsHandler = transactionsHandler;
 	}
 	
 	@Override
@@ -66,17 +64,9 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 					.normalize().toAbsolutePath();
 			try (InputStream inputStream = file.getInputStream()) {
 				
-				//TODO: Bad design, decouple code
 				if(Files.copy(inputStream, destinationFile,
 					StandardCopyOption.REPLACE_EXISTING) > 0) {
-					var txnRecords = parseTxnRecords(destinationFile.toString());
-					if(txnRecords == null || txnRecords.isEmpty()) {
-						return "NO_VALID_RECORDS_FOUND_IN_FILE";
-					}	else {
-						transactionsDao.deleteTransactions(DEFAULT_ACCOUNT_ID);
-						int rowsInserted = transactionsDao.saveTransactions(DEFAULT_ACCOUNT_ID, txnRecords);
-						return rowsInserted == txnRecords.size() ? "SUCCESS" : (txnRecords.size() - rowsInserted) + " row(s) failed to save!";
-					}
+					return "SUCCESS";
 				}
 				else {
 					return "WRITE_ERROR";
@@ -90,7 +80,7 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 	}
 	
 	@Override
-	public List<TransactionRecord> parseTxnRecords(String filePath) {
+	public List<TransactionRecord> parseData(String filePath) {
 		Map<String, Integer> columnMapping = new HashMap<String, Integer>();
 		List<TransactionRecord> txnRecords = new ArrayList<TransactionRecord>();
 
@@ -114,7 +104,14 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 
 			for (int rowNum = 3; rowNum < sheet.getPhysicalNumberOfRows(); rowNum++) {
 				Row row = sheet.getRow(rowNum);
-				TransactionRecord record = new TransactionRecord();
+				
+				Cell expenseCategory = row.getCell(columnMapping.get("Category"));
+				TransactionRecord record = new TransactionRecord();;
+				if(expenseCategory.getCellType() == CellType.STRING && !expenseCategory.getStringCellValue().isBlank()) {
+					record = ((ExpenseDetails) record);
+					((ExpenseDetails) record).setCategory(expenseCategory.getStringCellValue());
+				}	
+				
 //			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YY");
 				Cell dateCell = row.getCell(columnMapping.get("Date"));
 //			cell.setCellType(CellType.STRING)

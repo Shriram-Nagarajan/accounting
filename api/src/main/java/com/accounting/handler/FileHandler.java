@@ -10,6 +10,6 @@ public interface FileHandler {
 
 	public String store(MultipartFile file);
 	
-	public List<TransactionRecord> parseTxnRecords(String filePath);
+	public List<TransactionRecord> parseData(String filePath);
 	
 }

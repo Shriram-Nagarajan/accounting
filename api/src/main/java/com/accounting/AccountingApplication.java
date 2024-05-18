@@ -4,6 +4,8 @@ import java.util.Arrays;
 
 import javax.sql.DataSource;
 
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -56,5 +58,13 @@ public class AccountingApplication {
         dataSource.setPassword("root");
         return dataSource;
 	}
+    
+    @Bean("accountsSessionFactory")
+    SessionFactory accountsSessionFactory() {
+    	SessionFactory sessionFactory = new Configuration()
+                .configure("hibernate.cfg.xml")
+                .buildSessionFactory();
+    	return sessionFactory;
+    }
 
 }
