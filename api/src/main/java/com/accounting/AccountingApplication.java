@@ -9,12 +9,19 @@ import org.hibernate.cfg.Configuration;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+
+import com.accounting.hibernate.AccountsPersistenceProvider;
 
 @SpringBootApplication(scanBasePackages = {"com.accounting","com.accounting.*"})
+@EntityScan(basePackages = {"com.accounting.entity"})
+@EnableJpaRepositories(entityManagerFactoryRef = "entityManagerFactory")
 @PropertySource("classpath:*.properties")
 public class AccountingApplication {
 
@@ -65,6 +72,15 @@ public class AccountingApplication {
                 .configure("hibernate.cfg.xml")
                 .buildSessionFactory();
     	return sessionFactory;
+    }
+    
+    @Bean("entityManagerFactory")
+    LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+    	LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
+    	bean.setPackagesToScan("com.accounting.entity");
+    	bean.setDataSource(accountsDataSource());
+    	bean.setPersistenceProviderClass(AccountsPersistenceProvider.class);
+    	return bean;
     }
 
 }

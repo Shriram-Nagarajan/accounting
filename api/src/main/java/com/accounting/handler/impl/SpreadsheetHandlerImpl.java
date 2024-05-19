@@ -42,11 +42,8 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 	
 	private final Environment env;
 	
-	private final TransactionsHandler transactionsHandler;
-	
 	public SpreadsheetHandlerImpl(Environment env, TransactionsHandler transactionsHandler) {
 		this.env = env;
-		this.transactionsHandler = transactionsHandler;
 	}
 	
 	@Override
@@ -107,8 +104,8 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 				
 				Cell expenseCategory = row.getCell(columnMapping.get("Category"));
 				TransactionRecord record = new TransactionRecord();;
-				if(expenseCategory.getCellType() == CellType.STRING && !expenseCategory.getStringCellValue().isBlank()) {
-					record = ((ExpenseDetails) record);
+				if(expenseCategory != null && expenseCategory.getCellType() == CellType.STRING && !expenseCategory.getStringCellValue().isBlank()) {
+					record = new ExpenseDetails();
 					((ExpenseDetails) record).setCategory(expenseCategory.getStringCellValue());
 				}	
 				

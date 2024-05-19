@@ -17,35 +17,36 @@ import jakarta.persistence.Table;
 public class TransactionEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private long transactionId;
+	@Column(name="transaction_id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	public Long transactionId;
 	
 	@Column(name = "transaction_ref_num")
-	private String txnRefNumber;
+	public String txnRefNumber;
 	
 	@Column(name = "account_id")
-	private long accountId;
+	public long accountId;
 	
 	@Column(name = "transaction_date")
-	private Date date;
+	public Date date;
 	
 	@Column(name = "description")
-	private String description;
+	public String description;
 	
 	@Column(name = "credit_txn")
-	private boolean creditTxn;
+	public boolean creditTxn;
 	
 	@Column(name = "amount")
-	private BigDecimal amount;
+	public BigDecimal amount;
 	
 	@Column(name = "reversal_txn")
-	private boolean reversalTxn;
+	public boolean reversalTxn;
 
-	public long getTransactionId() {
+	public Long getTransactionId() {
 		return transactionId;
 	}
 
-	public void setTransactionId(long transactionId) {
+	public void setTransactionId(Long transactionId) {
 		this.transactionId = transactionId;
 	}
 
