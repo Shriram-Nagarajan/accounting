@@ -19,7 +19,7 @@ public class TransactionEntity {
 	@Id
 	@Column(name="transaction_id")
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	public Long transactionId;
+	public Long id;
 	
 	@Column(name = "transaction_ref_num")
 	public String txnRefNumber;
@@ -42,12 +42,12 @@ public class TransactionEntity {
 	@Column(name = "reversal_txn")
 	public boolean reversalTxn;
 
-	public Long getTransactionId() {
-		return transactionId;
+	public Long getId() {
+		return id;
 	}
 
-	public void setTransactionId(Long transactionId) {
-		this.transactionId = transactionId;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getTxnRefNumber() {

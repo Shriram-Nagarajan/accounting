@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.accounting.dao.TransactionsDao;
 import com.accounting.entity.ExpenseDetailsEntity;
@@ -31,13 +30,15 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 				.toList();
 		txnEntityList = transactionsDao.saveTransactionEntities(txnEntityList);
 		if (txnEntityList != null && 
-				txnEntityList.stream().filter(t -> t.getTransactionId() > 0).toList().size() == txnRecords.size()) {
+				txnEntityList.stream()
+				.filter(t -> t.getId() > 0)
+				.toList().size() == txnRecords.size()) {
 			List<ExpenseDetailsEntity> expenseDetailsEntities = new ArrayList<ExpenseDetailsEntity>();
 			for (int i = 0; i < txnRecords.size(); i++) {
 				TransactionRecord txnRecord = txnRecords.get(i);
 				if (txnRecord instanceof ExpenseDetails && !((ExpenseDetails) txnRecord).getCategory().isBlank()) {
 					ExpenseDetailsEntity expenseEntity = new ExpenseDetailsEntity();
-					expenseEntity.setTransactionId(txnEntityList.get(i).getTransactionId());
+					expenseEntity.setId(txnEntityList.get(i).getId());
 					expenseEntity.setCategory(((ExpenseDetails) txnRecord).getCategory());
 					expenseDetailsEntities.add(expenseEntity);
 				}

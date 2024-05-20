@@ -38,5 +38,5 @@ CREATE TABLE IF NOT EXISTS accounts.`expense_details` (
     PRIMARY KEY (`transaction_id`),
     INDEX `idx_category` (`category`),
     CONSTRAINT `transaction_id` FOREIGN KEY (`transaction_id`)
-        REFERENCES transactions (transaction_id)
+        REFERENCES transactions (transaction_id) ON DELETE CASCADE
 );

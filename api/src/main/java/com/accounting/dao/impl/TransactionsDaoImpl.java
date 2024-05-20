@@ -8,9 +8,6 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,16 +19,22 @@ import com.accounting.entity.ExpenseDetailsEntity;
 import com.accounting.entity.TransactionEntity;
 import com.accounting.model.TransactionRecord;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
+@Transactional
 @Service("transactionsDao")
 public class TransactionsDaoImpl implements TransactionsDao {
 	
 	private final Environment env;
 	private final JdbcTemplate accountsTemplate;
-	private final SessionFactory accSessionFactory;
 	
-	public TransactionsDaoImpl(DataSource accountsDataSource, SessionFactory accountsSessionFactory, Environment env) {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+	
+	public TransactionsDaoImpl(DataSource accountsDataSource,  Environment env) {
 		accountsTemplate = new JdbcTemplate(accountsDataSource);
-		accSessionFactory = accountsSessionFactory;
 		this.env = env;
 	}
 
@@ -77,7 +80,6 @@ public class TransactionsDaoImpl implements TransactionsDao {
 	}
 
 	@Override
-	@Transactional
 	public int deleteTransactions(long accountId) {
 		String query = env.getProperty("delete_transactions");
 		if(query != null && !query.isBlank() && accountId > 0) {
@@ -88,26 +90,15 @@ public class TransactionsDaoImpl implements TransactionsDao {
 
 	@Override
 	public void saveExpenseDetailEntities(List<ExpenseDetailsEntity> expenseEntities) {
-		Session session = accSessionFactory.openSession();
 		
-		Transaction hibTxn = session.beginTransaction();
-		expenseEntities.forEach((expenseEntity) -> session.persist(expenseEntity));
+		expenseEntities.forEach((expenseEntity) -> entityManager.persist(expenseEntity));
 		
-		hibTxn.commit();
-		session.close();
 	}
 	
 	@Override
+	@Transactional
 	public List<TransactionEntity> saveTransactionEntities(List<TransactionEntity> transactionEntityList) {
-		
-		Session session = accSessionFactory.openSession();
-		
-		Transaction hibTxn = session.beginTransaction();
-		transactionEntityList.forEach((txnEntity) -> session.persist(txnEntity));
-		
-		hibTxn.commit();
-		session.close();
-		
+		transactionEntityList.forEach((txnEntity) -> entityManager.persist(txnEntity));
 		return transactionEntityList;
 	}
 	

@@ -11,6 +11,6 @@
         <property name="hibernate.connection.password">root</property>
         <property name="hibernate.dialect">org.hibernate.dialect.MySQL8Dialect</property>
         <property name="hibernate.hbm2ddl.auto">update</property>
-        <mapping class="com.accounting.entity.TransactionEntity"/>
+        <mapping class="com.accounting.entity.TransactionEntity" />
     </session-factory>
 </hibernate-configuration>
