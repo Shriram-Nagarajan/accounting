@@ -101,60 +101,58 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 
 			for (int rowNum = 3; rowNum < sheet.getPhysicalNumberOfRows(); rowNum++) {
 				Row row = sheet.getRow(rowNum);
-				
-				Cell expenseCategory = row.getCell(columnMapping.get("Category"));
-				TransactionRecord record = new TransactionRecord();;
-				if(expenseCategory != null && expenseCategory.getCellType() == CellType.STRING && !expenseCategory.getStringCellValue().isBlank()) {
-					record = new ExpenseDetails();
-					((ExpenseDetails) record).setCategory(expenseCategory.getStringCellValue());
-				}	
-				
-//			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YY");
-				Cell dateCell = row.getCell(columnMapping.get("Date"));
-//			cell.setCellType(CellType.STRING)
-				if (dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
-					// If it's a date cell, then retrieve the date value
-					Date date = dateCell.getDateCellValue();
-					record.setDate(date);
-//                System.out.println(rowNum+"::Number::Date from Excel: " + date);
-				} else if (dateCell.getCellType() == CellType.STRING) {
-					// If it's a string cell, then parse the string as a date
-					String dateString = dateCell.getStringCellValue();
-					SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
-					Date date = dateFormat.parse(dateString);
-//                System.out.println(rowNum+"::String::Date from Excel: " + date);
-					record.setDate(date);
-				} else {
-					System.out.println("The cell is not a valid date");
+
+				if(isValidRow(row, columnMapping)) {
+					TransactionRecord txnRecord = new TransactionRecord();
+					Cell expenseCategory = row.getCell(columnMapping.get("Category"));
+					if (expenseCategory != null && expenseCategory.getCellType() == CellType.STRING
+							&& !expenseCategory.getStringCellValue().isBlank()) {
+						txnRecord = new ExpenseDetails();
+						((ExpenseDetails) txnRecord).setCategory(expenseCategory.getStringCellValue());
+					}
+
+					Cell dateCell = row.getCell(columnMapping.get("Date"));
+					if (dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
+						// If it's a date cell, then retrieve the date value
+						Date date = dateCell.getDateCellValue();
+						txnRecord.setDate(date);
+					} else if (dateCell.getCellType() == CellType.STRING) {
+						// If it's a string cell, then parse the string as a date
+						String dateString = dateCell.getStringCellValue();
+						SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
+						Date date = dateFormat.parse(dateString);
+						txnRecord.setDate(date);
+					} else {
+						System.out.println("The cell is not a valid date");
+					}
+					Cell descCell = row.getCell(columnMapping.get("Narration"));
+					txnRecord.setDescription(descCell.getStringCellValue());
+
+					// Format the cell value
+					Cell txnRefNumCell = row.getCell(columnMapping.get("Chq./Ref.No."));
+					String txnRefNum = txnRefNumCell.getCellType() == CellType.NUMERIC
+							? String.valueOf(Double.valueOf(txnRefNumCell.getNumericCellValue()).longValue())
+							: txnRefNumCell.getStringCellValue();
+					txnRecord.setTxnRefNumber(txnRefNum);
+
+					Cell wdAmtCell = row.getCell(columnMapping.get("Withdrawal Amt."));
+					Cell depAmtCell = row.getCell(columnMapping.get("Deposit Amt."));
+
+					boolean creditTxn = depAmtCell != null && depAmtCell.getNumericCellValue() != 0.0;
+					boolean debitTxn = wdAmtCell != null && wdAmtCell.getNumericCellValue() != 0.0;
+
+					if (!creditTxn && !debitTxn) {
+						System.err.println("Must be a credit or debit txn..row Number: " + rowNum);
+					}
+
+					txnRecord.setCreditTxn(creditTxn);
+					txnRecord.setAmount(creditTxn ? BigDecimal.valueOf(depAmtCell.getNumericCellValue())
+							: BigDecimal.valueOf(wdAmtCell.getNumericCellValue()));
+
+					txnRecord.setReversalTxn(txnRecord.getAmount().doubleValue() < 0.0);
+
+					txnRecords.add(txnRecord);
 				}
-				Cell descCell = row.getCell(columnMapping.get("Narration"));
-				record.setDescription(descCell.getStringCellValue());
-
-				// Format the cell value
-				Cell txnRefNumCell = row.getCell(columnMapping.get("Chq./Ref.No."));
-				String txnRefNum = txnRefNumCell.getCellType() == CellType.NUMERIC
-						? String.valueOf(Double.valueOf(txnRefNumCell.getNumericCellValue()).longValue())
-						: txnRefNumCell.getStringCellValue();
-				record.setTxnRefNumber(txnRefNum);
-
-				Cell wdAmtCell = row.getCell(columnMapping.get("Withdrawal Amt."));
-				Cell depAmtCell = row.getCell(columnMapping.get("Deposit Amt."));
-
-				boolean creditTxn = depAmtCell != null && depAmtCell.getNumericCellValue() != 0.0;
-				boolean debitTxn = wdAmtCell != null && wdAmtCell.getNumericCellValue() != 0.0;
-
-				if (!creditTxn && !debitTxn) {
-					System.err.println("Must be a credit or debit txn..");
-					return List.of();
-				}
-
-				record.setCreditTxn(creditTxn);
-				record.setAmount(creditTxn ? BigDecimal.valueOf(depAmtCell.getNumericCellValue())
-						: BigDecimal.valueOf(wdAmtCell.getNumericCellValue()));
-
-				record.setReversalTxn(record.getAmount().doubleValue() < 0.0);
-
-				txnRecords.add(record);
 			}
 			txnRecords.stream().forEach(record -> {
 				System.out.println(record);
@@ -173,6 +171,34 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 			}
 		}
 		return txnRecords;
+	}
+	
+	private boolean isValidRow(Row row, Map<String, Integer> columnMapping) {
+		if(row == null) {
+			return false;
+		}
+		Cell txnRefNumCell = row.getCell(columnMapping.get("Chq./Ref.No."));
+		if(txnRefNumCell == null) {
+			return false;
+		}	else {
+			String txnRefNum = txnRefNumCell.getCellType() == CellType.NUMERIC
+					? String.valueOf(Double.valueOf(txnRefNumCell.getNumericCellValue()).longValue())
+					: txnRefNumCell.getStringCellValue();
+			if(txnRefNum == null || txnRefNum.isBlank()) {
+				return false;
+			}
+			
+			Cell wdAmtCell = row.getCell(columnMapping.get("Withdrawal Amt."));
+			Cell depAmtCell = row.getCell(columnMapping.get("Deposit Amt."));
+
+			boolean creditTxn = depAmtCell != null && depAmtCell.getNumericCellValue() != 0.0;
+			boolean debitTxn = wdAmtCell != null && wdAmtCell.getNumericCellValue() != 0.0;
+			
+			if(!creditTxn && !debitTxn) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	private boolean isAllowed(MultipartFile file) {

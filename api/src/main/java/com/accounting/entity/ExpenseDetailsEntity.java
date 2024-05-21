@@ -2,8 +2,6 @@ package com.accounting.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -15,8 +13,8 @@ public class ExpenseDetailsEntity {
 	@Column(name="transaction_id")
 	private long id;
 	
-	@Column(name = "category")
-	private String category;
+	@Column(name = "category_id")
+	private int categoryId;
 
 	public long getId() {
 		return id;
@@ -26,12 +24,12 @@ public class ExpenseDetailsEntity {
 		this.id = transactionId;
 	}
 
-	public String getCategory() {
-		return category;
+	public int getCategoryId() {
+		return categoryId;
 	}
 
-	public void setCategory(String category) {
-		this.category = category;
+	public void setCategoryId(int categoryId) {
+		this.categoryId = categoryId;
 	}
 	
 }

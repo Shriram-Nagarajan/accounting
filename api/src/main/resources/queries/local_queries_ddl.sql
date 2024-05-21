@@ -31,12 +31,20 @@ CREATE TABLE IF NOT EXISTS accounts.`transactions` (
 	CONSTRAINT `fk_account_id` FOREIGN KEY (`account_id`) REFERENCES `account_details` (`account_id`)
 )  DEFAULT CHARSET=UTF8MB4 COLLATE = UTF8MB4_UNICODE_CI;
 
+DROP table if exists accounts.`categories`;
+CREATE TABLE IF NOT EXISTS accounts.`categories` (
+  `category_id` int NOT NULL AUTO_INCREMENT,
+  `category_name` varchar(100) unique NOT NULL,
+  PRIMARY KEY (`category_id`),
+  KEY `idx_category_name` (`category_name`)
+) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 drop table if exists accounts.`expense_details`;
 CREATE TABLE IF NOT EXISTS accounts.`expense_details` (
     `transaction_id` BIGINT NOT NULL,
-    `category` VARCHAR(100) NOT NULL,
+    `category_id` INT,
     PRIMARY KEY (`transaction_id`),
-    INDEX `idx_category` (`category`),
     CONSTRAINT `transaction_id` FOREIGN KEY (`transaction_id`)
         REFERENCES transactions (transaction_id) ON DELETE CASCADE
-);
+) DEFAULT CHARSET=UTF8MB4 COLLATE = UTF8MB4_UNICODE_CI;
