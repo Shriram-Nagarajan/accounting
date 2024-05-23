@@ -1,6 +1,7 @@
 // import logo from './logo.svg';
 // import './App.css';
 import CategoryWiseExpensesTable from './components/CategoryWiseExpensesTable';
+import ExpenseFileUploadForm from './components/ExpenseFileUploadForm';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
           Accounting data
         </p>
         <CategoryWiseExpensesTable />
+        <ExpenseFileUploadForm  />
       </header>
     </div>
   );

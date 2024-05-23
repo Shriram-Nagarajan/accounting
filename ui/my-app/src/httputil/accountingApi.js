@@ -9,8 +9,13 @@ const getCategoryWiseExpenses = (onSuccess, onError) => {
     http.get(getDomainUrl() + "expenses-by-category", {}, onSuccess, onError);
 }
 
+const uploadExpensesFile = (formData, onSuccess, onError) => {
+    http.postMultipartFormData(getDomainUrl() + "upload", formData, onSuccess, onError);
+}
+
 const accountingApi = {
-    getCategoryWiseExpenses
+    getCategoryWiseExpenses,
+    uploadExpensesFile
 }
 
 export default accountingApi;

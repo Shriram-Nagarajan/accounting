@@ -29,7 +29,25 @@ const get = (url, parameters, onSuccess, onError) => {
         });
 }
 
-const http = {get};
+const postMultipartFormData = (url, parameters, onSuccess, onError) => {
+    axios.post(url, parameters ,{
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }})
+    .then(function (response) {
+        console.log(response);
+        onSuccess(response);
+    })
+    .catch(function (error) {
+        console.log(error);
+        onError(error);
+    })
+    .finally(function () {
+        
+    });
+}
+
+const http = {get, postMultipartFormData};
 
 export default http;
 
