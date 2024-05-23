@@ -11,6 +11,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication(scanBasePackages = {"com.accounting","com.accounting.*"})
 @PropertySource("classpath:*.properties")
@@ -36,6 +38,8 @@ public class AccountingApplication {
 
 		};
 	}
+    
+    
 
     @Bean("usersDataSource")
     DataSource usersDataSource() {
@@ -57,6 +61,16 @@ public class AccountingApplication {
         return dataSource;
 	}
     
+	@Bean
+	public WebMvcConfigurer corsConfigurer() {
+		return new WebMvcConfigurer() {
+			@Override
+			public void addCorsMappings(CorsRegistry registry) {
+				registry.addMapping("/**").allowedOrigins("http://localhost:3000");
+			}
+		};
+	}
+	
 	/*
 	 * @Bean("accountsSessionFactory") SessionFactory accountsSessionFactory() {
 	 * SessionFactory sessionFactory = new Configuration()
