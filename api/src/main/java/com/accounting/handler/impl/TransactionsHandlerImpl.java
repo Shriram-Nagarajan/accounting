@@ -68,7 +68,7 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 	}
 
 	@Override
-	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId) {
+	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate) {
 		return transactionsDao.getCategoryWiseExpenses(accountId);
 	}
 	

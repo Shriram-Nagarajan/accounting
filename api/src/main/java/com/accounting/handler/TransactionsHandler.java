@@ -9,6 +9,6 @@ public interface TransactionsHandler {
 	
 	public String saveTransactions(long accountId, List<TransactionRecord> txnRecords);
 	
-	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId);
+	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate);
 
 }
