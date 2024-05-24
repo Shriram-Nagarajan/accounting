@@ -2,6 +2,7 @@ package com.accounting.controller;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.core.env.Environment;
@@ -36,13 +37,13 @@ public class AccountingController {
 	}
 	
 
-	private void validateDate(String fromDate, String toDate) throws ParseException {
+	private void validateDate(String fromDateStr, String toDateStr) throws ParseException {
 		
-		if(fromDate == null || fromDate.isBlank()) {
+		if(fromDateStr == null || fromDateStr.isBlank()) {
 			throw new IllegalArgumentException("fromDate parameter is not provided");
 		}
 		
-		if(toDate == null || toDate.isBlank()) {
+		if(toDateStr == null || toDateStr.isBlank()) {
 			throw new IllegalArgumentException("toDate parameter is not provided");
 		}
 		
@@ -53,9 +54,12 @@ public class AccountingController {
         sdf.setLenient(false);
         
         // ParseException to be thrown if given dates are not valid.
-		sdf.parse(fromDate);
-		sdf.parse(toDate);
+		Date fromDate = sdf.parse(fromDateStr);
+		Date toDate = sdf.parse(toDateStr);
 				
+		if(toDate.before(fromDate)) {
+			throw new IllegalArgumentException("toDate must be after fromDate");
+		}
 	}
 	
 }

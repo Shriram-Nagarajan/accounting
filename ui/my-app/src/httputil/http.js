@@ -3,7 +3,7 @@ import axios from 'axios';
 const queryParamStr = (queryParams) => {
 
     let str = "";
-    if(queryParams && typeof queryParams == Object && Object.keys(queryParams).length > 0) {
+    if(queryParams && typeof queryParams == "object" && Object.keys(queryParams).length > 0) {
         str += "?";
         Object.keys(queryParams).forEach(key => {
             str += key + "=" + queryParams[key] + "&";

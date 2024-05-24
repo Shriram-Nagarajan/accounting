@@ -102,11 +102,13 @@ public class TransactionsDaoImpl implements TransactionsDao {
 
 	@SuppressWarnings("serial")
 	@Override
-	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId) {
+	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate) {
 		String query = env.getProperty("get_category_wise_expenses");
 		if(accountId > 0 && query != null && !query.isBlank()) {
-			var resultList = accountsNamedTemplate.queryForList(query, new HashMap<String, Long> () {
-				{put("accountId", accountId);}
+			var resultList = accountsNamedTemplate.queryForList(query, new HashMap<> () {
+				{put("accountId", accountId);};
+				{put("fromDate", fromDate);};
+				{put("toDate", toDate);};
 			});
 			return resultList.stream()
 					.map((each) -> {

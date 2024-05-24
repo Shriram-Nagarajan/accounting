@@ -5,8 +5,8 @@ const getDomainUrl = () => {
     return constants.scheme + "://" + constants.accountingDomain + "/";
 }
 
-const getCategoryWiseExpenses = (onSuccess, onError) => {
-    http.get(getDomainUrl() + "expenses-by-category", {}, onSuccess, onError);
+const getCategoryWiseExpenses = (parameters, onSuccess, onError) => {
+    http.get(getDomainUrl() + "expenses-by-category", parameters, onSuccess, onError);
 }
 
 const uploadExpensesFile = (formData, onSuccess, onError) => {

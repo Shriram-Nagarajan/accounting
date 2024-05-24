@@ -17,6 +17,6 @@ public interface TransactionsDao {
 	
 	public void saveExpenseDetailEntities(List<ExpenseDetailsEntity> expenseDetails);
 	
-	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId);
+	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate);
 	
 }
