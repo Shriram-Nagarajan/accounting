@@ -1,5 +1,6 @@
 package com.accounting.dao;
 
+import java.util.Date;
 import java.util.List;
 
 import com.accounting.entity.ExpenseDetailsEntity;
@@ -11,7 +12,7 @@ public interface TransactionsDao {
 	
 	public int saveTransactions(long accountId, List<TransactionRecord> transactionRecordList);
 	
-	public int deleteTransactions(long accountId);
+	public int deleteTransactions(long accountId, Date fromDate, Date toDate);
 	
 	public List<TransactionEntity> saveTransactionEntities(List<TransactionEntity> transactionEntityList);
 	

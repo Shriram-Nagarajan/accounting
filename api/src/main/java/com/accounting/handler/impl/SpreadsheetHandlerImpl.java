@@ -165,7 +165,9 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 			e.printStackTrace();
 		} finally {
 			try {
-				workbook.close();
+				if(workbook != null) {
+					workbook.close();
+				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
@@ -78,10 +79,14 @@ public class TransactionsDaoImpl implements TransactionsDao {
 	}
 
 	@Override
-	public int deleteTransactions(long accountId) {
+	public int deleteTransactions(long accountId, Date fromDate, Date toDate) {
 		String query = env.getProperty("delete_transactions");
 		if(query != null && !query.isBlank() && accountId > 0) {
-			return accountsTemplate.update(query, accountId);
+			Map<String, Object> paramMap = new HashMap<>();
+			paramMap.put("accountId", accountId);
+			paramMap.put("fromDate", fromDate);
+			paramMap.put("toDate", toDate);
+			return accountsNamedTemplate.update(query, paramMap); 
 		}
 		return 0;
 	}
@@ -96,7 +101,17 @@ public class TransactionsDaoImpl implements TransactionsDao {
 	@Override
 	@Transactional
 	public List<TransactionEntity> saveTransactionEntities(List<TransactionEntity> transactionEntityList) {
-		transactionEntityList.forEach((txnEntity) -> entityManager.persist(txnEntity));
+		int count = 0;
+		int batchSize = Integer.parseInt(env.getProperty("entity.transaction.batch-size"));
+		// save entities batch-wise
+		for(TransactionEntity txnEntity : transactionEntityList) {
+			entityManager.persist(txnEntity);
+			count++;
+			if(count % batchSize == 0) {
+				entityManager.flush();
+				entityManager.clear();
+			}
+		}
 		return transactionEntityList;
 	}
 

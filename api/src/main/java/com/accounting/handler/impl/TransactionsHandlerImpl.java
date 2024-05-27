@@ -1,6 +1,7 @@
 package com.accounting.handler.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -29,7 +30,15 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 
 	@Override
 	public String saveTransactions(long accountId, List<TransactionRecord> txnRecords) {
-		transactionsDao.deleteTransactions(accountId);
+		Date minDate = txnRecords.stream()
+			.map(TransactionRecord::getDate)
+			.sorted((d1, d2) -> d1.compareTo(d2))
+			.findFirst().get();
+		Date maxDate = txnRecords.stream()
+				.map(TransactionRecord::getDate)
+				.sorted((d1, d2) -> d2.compareTo(d1))
+				.findFirst().get();
+		transactionsDao.deleteTransactions(accountId, minDate, maxDate);
 		List<TransactionEntity> txnEntityList = txnRecords
 				.stream()
 				.map((txnRecord) -> TransactionEntity.getEntity(accountId, txnRecord))

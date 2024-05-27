@@ -18,6 +18,10 @@ function CategoryWiseExpensesTable() {
             console.error("Error fetching expenses", error);
         });
     }
+
+    let sumTotalExpenditure = expenses.map(exp => exp.totalExpenditure).reduce((acc, val) => {
+        return acc + val;
+    }, 0);
     
     return (
         <div>
@@ -37,7 +41,7 @@ function CategoryWiseExpensesTable() {
                 </tr>
                 </thead>
                 <tbody>
-                {expenses.map(expense => (
+                {expenses.sort((e1, e2) => e2.totalExpenditure - e1.totalExpenditure).map(expense => (
                     <tr key={expense.categoryName}>
                     <td>{expense.categoryName}</td>
                     <td>{expense.numOfExpenses}</td>
@@ -46,6 +50,7 @@ function CategoryWiseExpensesTable() {
                 ))}
                 </tbody>
             </table>
+            <span>{'Total expenditure: Rs. ' + sumTotalExpenditure}</span>
         </div>
     );
 

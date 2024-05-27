@@ -1,8 +1,6 @@
 package com.accounting.controller;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 import org.springframework.core.env.Environment;
@@ -13,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.accounting.handler.TransactionsHandler;
 import com.accounting.model.CategoryWiseExpense;
+import com.accounting.util.DateUtil;
 
 @RestController
 public class AccountingController {
@@ -49,17 +48,10 @@ public class AccountingController {
 		
         String dateFormat = env.getProperty("mysql.date.format"); // Expected date format
         
-        // Create a SimpleDateFormat object with the expected format
-        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
-        sdf.setLenient(false);
-        
-        // ParseException to be thrown if given dates are not valid.
-		Date fromDate = sdf.parse(fromDateStr);
-		Date toDate = sdf.parse(toDateStr);
-				
-		if(toDate.before(fromDate)) {
-			throw new IllegalArgumentException("toDate must be after fromDate");
-		}
+        if(DateUtil.isBefore(toDateStr, fromDateStr, dateFormat)) {
+        	throw new IllegalArgumentException("toDate must be after fromDate");
+        }
+
 	}
 	
 }
