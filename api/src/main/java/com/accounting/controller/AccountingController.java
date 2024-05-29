@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.accounting.handler.TransactionsHandler;
 import com.accounting.model.CategoryWiseExpense;
+import com.accounting.model.ExpenseDetails;
 import com.accounting.util.DateUtil;
 
 @RestController
@@ -36,12 +37,12 @@ public class AccountingController {
 	}
 	
 	@GetMapping("/expenses")
-	public ResponseEntity<List<CategoryWiseExpense>> getExpenses(
+	public ResponseEntity<List<ExpenseDetails>> getExpenses(
 			@RequestParam(value = "categoryId") int categoryId,
 			@RequestParam(value = "fromDate", required = false) String fromDate,
 			@RequestParam(value = "toDate", required = false) String toDate) throws ParseException {
 		validateDate(fromDate, toDate);
-		return ResponseEntity.ok(transactionsHandler.getCategoryWiseExpenses(DEFAULT_ACCOUNT_ID,
+		return ResponseEntity.ok(transactionsHandler.getExpenses(DEFAULT_ACCOUNT_ID, categoryId,
 				fromDate, toDate));
 	}
 	

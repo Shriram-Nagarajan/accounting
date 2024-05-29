@@ -1,8 +1,10 @@
 package com.accounting.dao.impl;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.Date;
+import java.text.ParseException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +25,7 @@ import com.accounting.entity.TransactionEntity;
 import com.accounting.model.CategoryWiseExpense;
 import com.accounting.model.ExpenseDetails;
 import com.accounting.model.TransactionRecord;
+import com.accounting.util.DateUtil;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -60,8 +63,8 @@ public class TransactionsDaoImpl implements TransactionsDao {
 					int colIdx = 1;
 					ps.setString(colIdx++, txnRecord.getTxnRefNumber());
 					ps.setLong(colIdx++, accountId);
-					Date date = txnRecord.getDate();
-					ps.setDate(colIdx++, new java.sql.Date(date.getTime()));
+					LocalDate date = txnRecord.getDate();
+					ps.setDate(colIdx++, java.sql.Date.valueOf(date));
 					ps.setString(colIdx++, txnRecord.getDescription());
 					ps.setBoolean(colIdx++, txnRecord.isCreditTxn());
 					ps.setBigDecimal(colIdx++, txnRecord.getAmount());
@@ -80,7 +83,7 @@ public class TransactionsDaoImpl implements TransactionsDao {
 	}
 
 	@Override
-	public int deleteTransactions(long accountId, Date fromDate, Date toDate) {
+	public int deleteTransactions(long accountId, LocalDate fromDate, LocalDate toDate) {
 		String query = env.getProperty("delete_transactions");
 		if(query != null && !query.isBlank() && accountId > 0) {
 			Map<String, Object> paramMap = new HashMap<>();
@@ -153,7 +156,19 @@ public class TransactionsDaoImpl implements TransactionsDao {
 					.map((each) -> {
 						ExpenseDetails expenseDetails = new ExpenseDetails();
 						expenseDetails.setTransactionId(Long.parseLong(String.valueOf(each.get("transaction_id"))));
-						expenseDetails.setDate(Date.parse(String.valueOf(each.get("date"))));
+						try {
+							expenseDetails.setDate(
+									DateUtil.getDate(
+											String.valueOf(each.get("transaction_date")).substring(0, 10),
+											env.getProperty("mysql.date.format")));
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						expenseDetails.setDescription(String.valueOf(each.get("description")));
+						expenseDetails.setAmount(BigDecimal.valueOf(Double.parseDouble(String.valueOf(each.get("amount")))));
+						expenseDetails.setTxnRefNumber(String.valueOf(each.get("transaction_ref_num")));
+						expenseDetails.setCategory(String.valueOf(each.get("category_name")));
 						return expenseDetails;
 					}).toList();
 		}

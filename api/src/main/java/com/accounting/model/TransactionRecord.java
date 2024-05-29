@@ -1,13 +1,16 @@
 package com.accounting.model;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+@JsonIgnoreProperties(value = {"creditTxn", "reversalTxn"})
 public class TransactionRecord {
 	
 	private long transactionId;
 	private String txnRefNumber;
-	private Date date;
+	private LocalDate date;
 	private String description;
 	private boolean creditTxn;
 	private BigDecimal amount;
@@ -25,11 +28,11 @@ public class TransactionRecord {
 	public void setTxnRefNumber(String txnRefNumber) {
 		this.txnRefNumber = txnRefNumber;
 	}
-	public Date getDate() {
+	public LocalDate getDate() {
 		return date;
 	}
-	public void setDate(Date date) {
-		this.date = date;
+	public void setDate(LocalDate localDate) {
+		this.date = localDate;
 	}
 	public String getDescription() {
 		return description;

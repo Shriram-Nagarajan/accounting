@@ -12,6 +12,9 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -115,12 +118,17 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 					if (dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
 						// If it's a date cell, then retrieve the date value
 						Date date = dateCell.getDateCellValue();
-						txnRecord.setDate(date);
+						LocalDate localDate = date.toInstant()
+								.atZone(ZoneId.systemDefault())
+								.toLocalDate();
+						txnRecord.setDate(localDate);
 					} else if (dateCell.getCellType() == CellType.STRING) {
 						// If it's a string cell, then parse the string as a date
 						String dateString = dateCell.getStringCellValue();
 						SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
-						Date date = dateFormat.parse(dateString);
+				        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy");
+
+						LocalDate date = LocalDate.parse(dateString, formatter);
 						txnRecord.setDate(date);
 					} else {
 						System.out.println("The cell is not a valid date");

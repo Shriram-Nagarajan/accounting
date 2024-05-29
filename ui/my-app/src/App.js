@@ -18,6 +18,13 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 
 
 function App() {
+
+accountingApi.getExpenses({categoryId: 3, fromDate: '2024-02-01', toDate: '2024-02-29'}, (response) => {
+  console.log("getExpenses: " + JSON.stringify(response.data));
+}, (error) => {
+  console.error(error);
+})
+
   const [expenses, setExpenses] = useState([]);
 const [fromDate, setFromDate] = useState("");
 const [toDate, setToDate] = useState("");

@@ -1,7 +1,7 @@
 package com.accounting.handler.impl;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,11 +30,11 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 
 	@Override
 	public String saveTransactions(long accountId, List<TransactionRecord> txnRecords) {
-		Date minDate = txnRecords.stream()
+		LocalDate minDate = txnRecords.stream()
 			.map(TransactionRecord::getDate)
 			.sorted((d1, d2) -> d1.compareTo(d2))
 			.findFirst().get();
-		Date maxDate = txnRecords.stream()
+		LocalDate maxDate = txnRecords.stream()
 				.map(TransactionRecord::getDate)
 				.sorted((d1, d2) -> d2.compareTo(d1))
 				.findFirst().get();
@@ -79,6 +79,11 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 	@Override
 	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate) {
 		return transactionsDao.getCategoryWiseExpenses(accountId, fromDate, toDate);
+	}
+
+	@Override
+	public List<ExpenseDetails> getExpenses(long accountId, int categoryId, String fromDate, String toDate) {
+		return transactionsDao.getExpenses(accountId, categoryId, fromDate, toDate);
 	}
 	
 }
