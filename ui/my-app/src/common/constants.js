@@ -1,5 +1,5 @@
 const constants = {
-    accountingDomain : "localhost:8081",
+    accountingDomain : "192.168.29.126:8081",
     scheme : "http"
 }
 

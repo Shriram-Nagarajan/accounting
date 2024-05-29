@@ -21,3 +21,7 @@
   .data-table tr:hover {
     background-color: #ddd;
   }
+  .item
+  {
+    width: 50%;
+  }
