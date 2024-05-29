@@ -5,6 +5,7 @@ import java.util.Date;
 
 public class TransactionRecord {
 	
+	private long transactionId;
 	private String txnRefNumber;
 	private Date date;
 	private String description;
@@ -12,6 +13,12 @@ public class TransactionRecord {
 	private BigDecimal amount;
 	private boolean reversalTxn;
 	
+	public long getTransactionId() {
+		return transactionId;
+	}
+	public void setTransactionId(long l) {
+		this.transactionId = l;
+	}
 	public String getTxnRefNumber() {
 		return txnRefNumber;
 	}

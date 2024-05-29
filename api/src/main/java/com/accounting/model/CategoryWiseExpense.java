@@ -2,10 +2,17 @@ package com.accounting.model;
 
 public class CategoryWiseExpense {
 	
+	private int categoryId;
 	private String categoryName;
 	private int numOfExpenses;
 	private double totalExpenditure;
 	
+	public int getCategoryId() {
+		return categoryId;
+	}
+	public void setCategoryId(int categoryId) {
+		this.categoryId = categoryId;
+	}
 	public String getCategoryName() {
 		return categoryName;
 	}

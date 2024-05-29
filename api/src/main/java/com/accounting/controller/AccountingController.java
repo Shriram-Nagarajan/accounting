@@ -35,6 +35,16 @@ public class AccountingController {
 				fromDate, toDate));
 	}
 	
+	@GetMapping("/expenses")
+	public ResponseEntity<List<CategoryWiseExpense>> getExpenses(
+			@RequestParam(value = "categoryId") int categoryId,
+			@RequestParam(value = "fromDate", required = false) String fromDate,
+			@RequestParam(value = "toDate", required = false) String toDate) throws ParseException {
+		validateDate(fromDate, toDate);
+		return ResponseEntity.ok(transactionsHandler.getCategoryWiseExpenses(DEFAULT_ACCOUNT_ID,
+				fromDate, toDate));
+	}
+	
 
 	private void validateDate(String fromDateStr, String toDateStr) throws ParseException {
 		

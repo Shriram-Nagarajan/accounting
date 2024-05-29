@@ -21,6 +21,7 @@ import com.accounting.dao.TransactionsDao;
 import com.accounting.entity.ExpenseDetailsEntity;
 import com.accounting.entity.TransactionEntity;
 import com.accounting.model.CategoryWiseExpense;
+import com.accounting.model.ExpenseDetails;
 import com.accounting.model.TransactionRecord;
 
 import jakarta.persistence.EntityManager;
@@ -128,6 +129,7 @@ public class TransactionsDaoImpl implements TransactionsDao {
 			return resultList.stream()
 					.map((each) -> {
 						CategoryWiseExpense expense = new CategoryWiseExpense();
+						expense.setCategoryId(Integer.parseInt(String.valueOf(each.get("category_id"))));
 						expense.setCategoryName(String.valueOf(each.get("category_name")));
 						expense.setNumOfExpenses(Integer.parseInt(String.valueOf(each.get("num_expenses"))));
 						expense.setTotalExpenditure(Double.parseDouble(String.valueOf(each.get("total_expenditure"))));
@@ -135,6 +137,27 @@ public class TransactionsDaoImpl implements TransactionsDao {
 					}).toList();
 		}
 		return null;
+	}
+
+	@Override
+	public List<ExpenseDetails> getExpenses(long accountId, int categoryId, String fromDate, String toDate) {
+		String query = env.getProperty("get_expenses");
+		if(query != null && !query.isBlank() && fromDate != null && toDate != null) {
+			Map<String, Object> paramMap = new HashMap<>();
+			paramMap.put("accountId", accountId);
+			paramMap.put("categoryId", categoryId);
+			paramMap.put("fromDate", fromDate);
+			paramMap.put("toDate", toDate);
+			var resultList = accountsNamedTemplate.queryForList(query, paramMap);
+			return resultList.stream()
+					.map((each) -> {
+						ExpenseDetails expenseDetails = new ExpenseDetails();
+						expenseDetails.setTransactionId(Long.parseLong(String.valueOf(each.get("transaction_id"))));
+						expenseDetails.setDate(Date.parse(String.valueOf(each.get("date"))));
+						return expenseDetails;
+					}).toList();
+		}
+		return List.of();
 	}
 	
 }
