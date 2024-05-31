@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.accounting.dao.TransactionsDao;
@@ -29,29 +31,25 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 	}
 
 	@Override
-	public String saveTransactions(long accountId, List<TransactionRecord> txnRecords) {
-		LocalDate minDate = txnRecords.stream()
-			.map(TransactionRecord::getDate)
-			.sorted((d1, d2) -> d1.compareTo(d2))
-			.findFirst().get();
-		LocalDate maxDate = txnRecords.stream()
-				.map(TransactionRecord::getDate)
-				.sorted((d1, d2) -> d2.compareTo(d1))
-				.findFirst().get();
-		transactionsDao.deleteTransactions(accountId, minDate, maxDate);
-		List<TransactionEntity> txnEntityList = txnRecords
-				.stream()
-				.map((txnRecord) -> TransactionEntity.getEntity(accountId, txnRecord))
-				.toList();
+	public String saveTransactions(long accountId, List<TransactionRecord> txnRecords, boolean deleteExisting) {
+		if (deleteExisting) {
+			log.info("Deleting existing transactions for account: "+ accountId);
+			LocalDate minDate = txnRecords.stream().map(TransactionRecord::getDate).sorted((d1, d2) -> d1.compareTo(d2))
+					.findFirst().get();
+			LocalDate maxDate = txnRecords.stream().map(TransactionRecord::getDate).sorted((d1, d2) -> d2.compareTo(d1))
+					.findFirst().get();
+			transactionsDao.deleteTransactions(accountId, minDate, maxDate);
+		}
+		List<TransactionEntity> txnEntityList = txnRecords.stream()
+				.map((txnRecord) -> TransactionEntity.getEntity(accountId, txnRecord)).toList();
 		txnEntityList = transactionsDao.saveTransactionEntities(txnEntityList);
-		if (txnEntityList != null && 
-				txnEntityList.stream()
-				.filter(t -> t.getId() > 0)
-				.toList().size() == txnRecords.size()) {
+		if (txnEntityList != null
+				&& txnEntityList.stream().filter(t -> t.getId() > 0).toList().size() == txnRecords.size()) {
 			List<ExpenseDetailsEntity> expenseDetailsEntities = new ArrayList<>();
 			for (int i = 0; i < txnRecords.size(); i++) {
 				TransactionRecord txnRecord = txnRecords.get(i);
-				if (txnRecord instanceof ExpenseDetails expenseDetails && !((ExpenseDetails) txnRecord).getCategory().isBlank()) {
+				if (txnRecord instanceof ExpenseDetails expenseDetails
+						&& !((ExpenseDetails) txnRecord).getCategory().isBlank()) {
 					ExpenseDetailsEntity expenseEntity = new ExpenseDetailsEntity();
 					expenseEntity.setId(txnEntityList.get(i).getId());
 					expenseEntity.setCategoryId(getCategoryId(expenseDetails.getCategory()));
@@ -59,7 +57,7 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 				}
 			}
 			transactionsDao.saveExpenseDetailEntities(expenseDetailsEntities);
-		}	else {
+		} else {
 			return "SAVING_TXN_FAILED";
 		}
 		return "SUCCESS";
@@ -85,5 +83,6 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 	public List<ExpenseDetails> getExpenses(long accountId, int categoryId, String fromDate, String toDate) {
 		return transactionsDao.getExpenses(accountId, categoryId, fromDate, toDate);
 	}
-	
+
+	private static final Logger log = LogManager.getLogger(TransactionsHandlerImpl.class);
 }

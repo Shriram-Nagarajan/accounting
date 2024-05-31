@@ -46,7 +46,7 @@ public class AccountingApplication {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/users");
-        dataSource.setUsername("shriram");
+        dataSource.setUsername("root");
         dataSource.setPassword("root");
         return dataSource;
 	}
@@ -56,7 +56,7 @@ public class AccountingApplication {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/accounts");
-        dataSource.setUsername("shriram");
+        dataSource.setUsername("root");
         dataSource.setPassword("root");
         return dataSource;
 	}

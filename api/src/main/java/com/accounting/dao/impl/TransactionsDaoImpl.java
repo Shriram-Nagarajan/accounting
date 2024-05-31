@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,13 +162,15 @@ public class TransactionsDaoImpl implements TransactionsDao {
 									DateUtil.getDate(
 											String.valueOf(each.get("transaction_date")).substring(0, 10),
 											env.getProperty("mysql.date.format")));
-						} catch (ParseException e) {
+						} catch (DateTimeParseException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-						expenseDetails.setDescription(String.valueOf(each.get("description")));
+						expenseDetails.setDescription(each.get("description") != null && !String.valueOf(each.get("description")).isBlank() ?
+									String.valueOf(each.get("description")) : null);
 						expenseDetails.setAmount(BigDecimal.valueOf(Double.parseDouble(String.valueOf(each.get("amount")))));
-						expenseDetails.setTxnRefNumber(String.valueOf(each.get("transaction_ref_num")));
+						expenseDetails.setTxnRefNumber(each.get("transaction_ref_num") != null && !String.valueOf(each.get("transaction_ref_num")).isBlank() ?
+								String.valueOf(each.get("transaction_ref_num")): null);
 						expenseDetails.setCategory(String.valueOf(each.get("category_name")));
 						return expenseDetails;
 					}).toList();

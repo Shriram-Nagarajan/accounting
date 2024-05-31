@@ -10,11 +10,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -125,7 +124,6 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 					} else if (dateCell.getCellType() == CellType.STRING) {
 						// If it's a string cell, then parse the string as a date
 						String dateString = dateCell.getStringCellValue();
-						SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
 				        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy");
 
 						LocalDate date = LocalDate.parse(dateString, formatter);
@@ -169,7 +167,7 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (ParseException e) {
+		} catch (DateTimeParseException e) {
 			e.printStackTrace();
 		} finally {
 			try {

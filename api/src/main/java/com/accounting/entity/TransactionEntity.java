@@ -1,7 +1,7 @@
 package com.accounting.entity;
 
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 
 import com.accounting.model.TransactionRecord;
 
@@ -28,7 +28,7 @@ public class TransactionEntity {
 	public long accountId;
 	
 	@Column(name = "transaction_date")
-	public Date date;
+	public LocalDate date;
 	
 	@Column(name = "description")
 	public String description;
@@ -66,12 +66,12 @@ public class TransactionEntity {
 		this.accountId = accountId;
 	}
 
-	public Date getDate() {
+	public LocalDate getDate() {
 		return date;
 	}
 
-	public void setDate(Date date) {
-		this.date = date;
+	public void setDate(LocalDate localDate) {
+		this.date = localDate;
 	}
 
 	public String getDescription() {

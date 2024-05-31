@@ -54,7 +54,7 @@ public class FileController {
 			if(txnRecords == null || txnRecords.isEmpty()) {
 				uploadStatus = "NO_VALID_RECORDS_FOUND_IN_FILE";
 			}	else {
-				uploadStatus = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID, txnRecords);
+				uploadStatus = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID, txnRecords, true);
 			}
 		}
 		return ResponseEntity.ok(new ApiResponse(uploadStatus));

@@ -8,7 +8,7 @@ import com.accounting.model.TransactionRecord;
 
 public interface TransactionsHandler {
 	
-	public String saveTransactions(long accountId, List<TransactionRecord> txnRecords);
+	public String saveTransactions(long accountId, List<TransactionRecord> txnRecords, boolean deleteExisting);
 	
 	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate);
 	

@@ -7,3 +7,5 @@ INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Misc');
 INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Utility bills');
 INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Deposits');
 INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Travel');
+
+INSERT INTO `accounts`.`account_details` (`account_number`, `name`) VALUES ('4895', 'test');

@@ -3,10 +3,11 @@ package com.accounting.util;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class DateUtil {
 	
-	public static LocalDate getDate(String dateStr, String dateFormat) throws ParseException {
+	public static LocalDate getDate(String dateStr, String dateFormat) throws DateTimeParseException {
 		DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(dateFormat);
 		return LocalDate.parse(dateStr, dateTimeFormatter);
 	}

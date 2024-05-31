@@ -2,10 +2,15 @@ package com.accounting.controller;
 
 import java.text.ParseException;
 import java.util.List;
+import java.util.UUID;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -46,6 +51,16 @@ public class AccountingController {
 				fromDate, toDate));
 	}
 	
+	
+	@PostMapping("/save-expenses")
+	public ResponseEntity<String> saveExpenses(@RequestBody List<ExpenseDetails> expDetails) {
+		String reqId = UUID.randomUUID().toString();
+		log.info("Request received saveExpenses- reqId: " + reqId);
+		String status = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID, ExpenseDetails.getTransactionRecords(expDetails), false);
+		log.info("Responding to saveExpenses request - reqId: "+ reqId +" with status: " + status);
+		return ResponseEntity.ok(status);
+	}
+	
 
 	private void validateDate(String fromDateStr, String toDateStr) throws ParseException {
 		
@@ -64,5 +79,7 @@ public class AccountingController {
         }
 
 	}
+	
+	private static final Logger log = LogManager.getLogger(AccountingController.class);
 	
 }
