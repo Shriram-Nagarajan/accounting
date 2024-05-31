@@ -5,7 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -14,7 +17,6 @@ import java.util.Map;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -52,20 +54,21 @@ public class ExcelPoi {
 //				DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/YY");
 				Cell dateCell = row.getCell(columnMapping.get("Date"));
 //				cell.setCellType(CellType.STRING)
-	            if (dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
-	                // If it's a date cell, then retrieve the date value
-	                Date date = dateCell.getDateCellValue();
-	                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
-	                record.setDate(date);
-//	                System.out.println(rowNum+"::Number::Date from Excel: " + date);
-	            } else if (dateCell.getCellType() == CellType.STRING) {
-	                // If it's a string cell, then parse the string as a date
-	                String dateString = dateCell.getStringCellValue();
-	                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy");
-	                Date date = dateFormat.parse(dateString);
-//	                System.out.println(rowNum+"::String::Date from Excel: " + date);
-	                record.setDate(date);
-	            } else {
+				if (dateCell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(dateCell)) {
+					// If it's a date cell, then retrieve the date value
+					Date date = dateCell.getDateCellValue();
+					LocalDate localDate = date.toInstant()
+							.atZone(ZoneId.systemDefault())
+							.toLocalDate();
+					record.setDate(localDate);
+				} else if (dateCell.getCellType() == CellType.STRING) {
+					// If it's a string cell, then parse the string as a date
+					String dateString = dateCell.getStringCellValue();
+			        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yy");
+
+					LocalDate date = LocalDate.parse(dateString, formatter);
+					record.setDate(date);
+				} else {
 	                System.out.println("The cell is not a valid date");
 	            }
 	            Cell descCell = row.getCell(columnMapping.get("Narration"));
@@ -108,7 +111,7 @@ public class ExcelPoi {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ParseException e) {
+        } catch (DateTimeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
