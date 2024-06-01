@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.accounting.handler.TransactionsHandler;
 import com.accounting.model.CategoryWiseExpense;
 import com.accounting.model.ExpenseDetails;
+import com.accounting.model.SaveExpensesRequest;
 import com.accounting.util.DateUtil;
 
 @RestController
@@ -53,10 +54,17 @@ public class AccountingController {
 	
 	
 	@PostMapping("/save-expenses")
-	public ResponseEntity<String> saveExpenses(@RequestBody List<ExpenseDetails> expDetails) {
+	public ResponseEntity<String> saveExpenses(@RequestBody SaveExpensesRequest saveExpensesRequest) {
 		String reqId = UUID.randomUUID().toString();
 		log.info("Request received saveExpenses- reqId: " + reqId);
-		String status = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID, ExpenseDetails.getTransactionRecords(expDetails), false);
+		if(saveExpensesRequest != null) {
+			if(saveExpensesRequest.getDeleteExisting() == null) {
+				saveExpensesRequest.setDeleteExisting(false);
+			}
+		}
+		String status = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID,
+				ExpenseDetails.getTransactionRecords(saveExpensesRequest.getExpenseList()),
+				saveExpensesRequest.getDeleteExisting());
 		log.info("Responding to saveExpenses request - reqId: "+ reqId +" with status: " + status);
 		return ResponseEntity.ok(status);
 	}

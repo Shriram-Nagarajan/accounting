@@ -42,8 +42,12 @@ public class FileController {
 	private static final long DEFAULT_ACCOUNT_ID = 1;
 	
 	@PostMapping("/upload")
-	public ResponseEntity<ApiResponse> upload(@RequestParam("file") MultipartFile file) {
+	public ResponseEntity<ApiResponse> upload(@RequestParam("file") MultipartFile file,
+			@RequestParam(required = false) Boolean deleteExisting) {
 
+		if(deleteExisting == null) {
+			deleteExisting = Boolean.TRUE;
+		}
 		String uploadStatus = fileHandler.store(file);
 		
 		if("SUCCESS".equals(uploadStatus)) {
@@ -54,7 +58,7 @@ public class FileController {
 			if(txnRecords == null || txnRecords.isEmpty()) {
 				uploadStatus = "NO_VALID_RECORDS_FOUND_IN_FILE";
 			}	else {
-				uploadStatus = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID, txnRecords, true);
+				uploadStatus = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID, txnRecords, deleteExisting);
 			}
 		}
 		return ResponseEntity.ok(new ApiResponse(uploadStatus));
