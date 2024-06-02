@@ -1,7 +1,4 @@
-import { useEffect, useState } from "react";
-import accountingApi from "../httputil/accountingApi";
-import '../css/table.css';
-import DatePicker from "./DatePicker";
+// import '../css/table.css';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -18,7 +15,7 @@ function CategoryWiseExpensesTable(props) {
 
     const StyledTableCell = styled(TableCell)(({ theme }) => ({
       [`&.${tableCellClasses.head}`]: {
-        backgroundColor: theme.palette.common.black,
+        backgroundColor: 'rgb(25, 118, 210)',//theme.palette.common.black,
         color: theme.palette.common.white,
       },
       [`&.${tableCellClasses.body}`]: {
@@ -77,7 +74,12 @@ function CategoryWiseExpensesTable(props) {
                 <StyledTableCell align="right">{row.totalExpenditure}</StyledTableCell>
                 {/* <TableCell align="right">{row.protein}</TableCell> */}
               </StyledTableRow>
+              
             ))}
+            <StyledTableRow >
+            <StyledTableCell align="center" colSpan={2} sx={{fontWeight : "bold",backgroundColor:'rgb(25, 118, 210)',color:'white'}}>Total expenditure</StyledTableCell>
+            <StyledTableCell align="right" sx={{fontWeight : "bold",backgroundColor:'rgb(25, 118, 210)',color:'white'}}>₹{sumTotalExpenditure}</StyledTableCell>
+          </StyledTableRow>
           </TableBody>
         </Table>
       </TableContainer>
@@ -99,7 +101,7 @@ function CategoryWiseExpensesTable(props) {
                 ))}
                 </tbody>
             </table> */}
-            <span>{'Total expenditure: Rs. ' + sumTotalExpenditure}</span>
+            {/* <span>{'Total expenditure: Rs. ' + sumTotalExpenditure}</span> */}
         </div>
     );
 
