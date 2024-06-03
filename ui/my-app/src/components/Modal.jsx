@@ -25,7 +25,7 @@ const style = {
 };
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
     [`&.${tableCellClasses.head}`]: {
-      backgroundColor: theme.palette.common.black,
+      backgroundColor: 'rgb(25, 118, 210)',//backgroundColor: theme.palette.common.black,
       color: theme.palette.common.white,
     },
     [`&.${tableCellClasses.body}`]: {
@@ -58,8 +58,8 @@ function ModalPopup({ open, handleClose, sliceData }) {
             <Box sx={style}>
             <div >
             {sliceData?
-            <TableContainer  component={Paper} sx={{ maxHeight: 400 }} >
-        <Table stickyHeader sx={{ minWidth: 500 }} size = "small" aria-label="customizedtable">
+            <TableContainer  component={Paper} sx={{ maxHeight: 450 }} >
+        <Table stickyHeader sx={{ minWidth: 550 }} size = "small" aria-label="customizedtable">
           <TableHead>
             <TableRow>
               <StyledTableCell align="center">Date</StyledTableCell>
@@ -73,11 +73,11 @@ function ModalPopup({ open, handleClose, sliceData }) {
                 key={row.date}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
-                <StyledTableCell align="left" component="th" scope="row" sx={{width:"100px"}}>
+                <StyledTableCell align="left" component="th" scope="row" sx={{width:"120px"}}>
                   {row.date}
                 </StyledTableCell>
                 <StyledTableCell align="left">{row.description}</StyledTableCell>
-                <StyledTableCell align="right" sx={{width:"90px"}}>{row.amount}</StyledTableCell>
+                <StyledTableCell align="right" sx={{width:"120px"}}>{row.amount}</StyledTableCell>
               </StyledTableRow>
               
             ))}
