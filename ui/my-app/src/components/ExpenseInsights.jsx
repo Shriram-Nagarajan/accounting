@@ -90,7 +90,7 @@ function ExpenseInsights()
         ]
       };
     return(
-        <Container maxWidth="lg">
+        <Container >
             {/* <AppBar position="static">
         <Toolbar>
           <AccountBalanceIcon sx={{ mr: 2 }} />
@@ -101,7 +101,7 @@ function ExpenseInsights()
       </AppBar> */}
         <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
         <Typography variant="h4" gutterBottom>
-          Accounting Data
+          Expense Insights
         </Typography>
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2} alignItems="center">
@@ -118,14 +118,7 @@ function ExpenseInsights()
             </Grid>
           </Grid>
         </form>
-        {/* <Box mt={4}>
-          <Typography variant="h6">
-            Selected From Date: {fromDate ? fromDate.format('YYYY-MM-DD') : 'None'}
-          </Typography>
-          <Typography variant="h6">
-            Selected To Date: {toDate ? toDate.format('YYYY-MM-DD') : 'None'}
-          </Typography>
-        </Box> */}
+
         {dataPresent && (
           <Box mt={4}>
             <Grid container spacing={4}>
@@ -139,9 +132,7 @@ function ExpenseInsights()
           </Box>
         )}
         <ModalPopup open={open} handleClose={handleClose} sliceData={sliceData} />
-        {/* <Box mt={4}>
-          <ExpenseFileUploadForm />
-        </Box> */}
+        
       </Paper>
       <Snackbar open={alertOpen} autoHideDuration={6000} onClose={() => setAlertOpen(false)}>
         <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: '100%' }}>
