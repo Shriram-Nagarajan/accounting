@@ -90,6 +90,21 @@
 			<scope>test</scope>
 		</dependency>
 		<!--
+		https://mvnrepository.com/artifact/org.springframework.session/spring-session-jdbc -->
+		<dependency>
+			<groupId>org.springframework.session</groupId>
+			<artifactId>spring-session-jdbc</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+		<!--
+		https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-data-jdbc -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jdbc</artifactId>
+			<version>3.3.0</version>
+		</dependency>
+
+		<!--
 		https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-core -->
 		<!-- dependency>
 			<groupId>org.apache.logging.log4j</groupId>
