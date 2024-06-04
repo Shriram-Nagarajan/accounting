@@ -49,10 +49,6 @@ function PieChart(props) {
                     },
                     onClick:(event,element) =>
                         {
-                            console.log(event);
-                            console.log(element);//element[0].index;
-                            console.log(element[0].index);
-                            console.log(props.data);//props.data.labels[element[0].index]
                             console.log(props.data.labels[element[0].index]);
                             props.onSliceClick(props.data.labels[element[0].index]);
                         },

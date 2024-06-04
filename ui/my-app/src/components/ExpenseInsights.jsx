@@ -37,7 +37,7 @@ function ExpenseInsights()
       const handleClose = () => {
         setOpen(false);
       };
-      const showAlert = (message, severity = 'error') => {
+      const showAlert = (message, severity) => {
         setAlertMessage(message);
         setAlertSeverity(severity);
         setAlertOpen(true);
@@ -54,7 +54,7 @@ function ExpenseInsights()
         }, (error) => {
           console.error("Error fetching expenses", error);
           setDataPresent(false);
-          showAlert('Error fetching expenses');
+          showAlert('Error fetching expenses','error');
         });
       };
     
@@ -68,7 +68,7 @@ function ExpenseInsights()
           setOpen(true);
         }, (error) => {
           console.error(error);
-          showAlert('Error fetching expenses');
+          showAlert('Error fetching expenses','error');
         });
       };
     
@@ -131,7 +131,7 @@ function ExpenseInsights()
             </Grid>
           </Box>
         )}
-        <ModalPopup open={open} handleClose={handleClose} sliceData={sliceData} />
+        <ModalPopup open={open} handleClose={handleClose} data={sliceData} from="einsights" />
         
       </Paper>
       <Snackbar open={alertOpen} autoHideDuration={6000} onClose={() => setAlertOpen(false)}>

@@ -1,5 +1,5 @@
 // SliceModal.jsx
-import React from 'react';
+import React,{useEffect, useState} from 'react';
 import { Modal, Box, Typography } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -9,6 +9,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
+
 
 const style = {
     position: 'absolute',
@@ -42,12 +43,23 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
       border: 0,
     },
   }));
-  
 
-function ModalPopup({ open, handleClose, sliceData }) {
-    let sumTotalExpenditure = sliceData? sliceData.map(exp => exp.amount).reduce((acc, val) => {
-        return acc + val;
-    }, 0):0;
+
+function ModalPopup({ open, handleClose, data,from }) {
+  const[isPreview,setIsPreview] = useState(false);
+  const [sumTotalExpenditure, setSumTotalExpenditure] = useState(0);
+  useEffect(() => {
+    if (from === "einsights") {
+      const totalExpenditure = data ? data.map(exp => exp.amount).reduce((acc, val) => acc + val, 0) : 0;
+      setSumTotalExpenditure(totalExpenditure);
+    } else if (from === "efileuploadforpreview") {
+      setIsPreview(true);
+    }
+  }, [data, from]);
+  const formatDate = (date) => {
+    const d = new Date(date);
+    return d.toLocaleDateString('en-GB'); // Adjust the format as needed
+  };
     return (
         <Modal
             open={open}
@@ -57,7 +69,7 @@ function ModalPopup({ open, handleClose, sliceData }) {
         >
             <Box sx={style}>
             <div >
-            {sliceData?
+            {data?
             <TableContainer  component={Paper} sx={{ maxHeight: 450 }} >
         <Table stickyHeader sx={{ minWidth: 550 }} size = "small" aria-label="customizedtable">
           <TableHead>
@@ -65,26 +77,30 @@ function ModalPopup({ open, handleClose, sliceData }) {
               <StyledTableCell align="center">Date</StyledTableCell>
               <StyledTableCell align="center">Description</StyledTableCell>
               <StyledTableCell align="left">Amount&nbsp;(in ₹)</StyledTableCell>
+              {isPreview ? <StyledTableCell align="left">Category</StyledTableCell> : null}
             </TableRow>
           </TableHead>
           <TableBody>
-            {sliceData.map((row) => (
+            {data.map((row) => (
               <StyledTableRow
                 key={row.date}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
                 <StyledTableCell align="left" component="th" scope="row" sx={{width:"120px"}}>
-                  {row.date}
+                {formatDate(row.date)}
                 </StyledTableCell>
                 <StyledTableCell align="left">{row.description}</StyledTableCell>
+                {isPreview ? <StyledTableCell align="left">{row.category}</StyledTableCell> : null}
+
                 <StyledTableCell align="right" sx={{width:"120px"}}>{row.amount}</StyledTableCell>
+
               </StyledTableRow>
               
             ))}
-            <StyledTableRow >
+            {!isPreview?(<StyledTableRow >
             <StyledTableCell align="left" colSpan={2} sx={{fontWeight : "bold"}}>Total expenditure</StyledTableCell>
             <StyledTableCell align="right" sx={{fontWeight : "bold"}}>₹{sumTotalExpenditure}</StyledTableCell>
-          </StyledTableRow>
+          </StyledTableRow>) :null}
           </TableBody>
         </Table>
       </TableContainer>
@@ -96,10 +112,10 @@ function ModalPopup({ open, handleClose, sliceData }) {
                     Slice Details
                 </Typography>
                 <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                    {sliceData ? (
+                    {data ? (
                         <>
-                            <p>Label: {sliceData.label}</p>
-                            <p>Value: {sliceData.value}</p>
+                            <p>Label: {data.label}</p>
+                            <p>Value: {data.value}</p>
                         </>
                     ) : (
                         <p>No data available</p>

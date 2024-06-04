@@ -1,29 +1,64 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import accountingApi from '../httputil/accountingApi';
-import { Container, Paper, Divider, MenuItem,Typography, Grid, Button, Box,InputLabel,Select, Alert, TextField } from '@mui/material';
+import { Container, Paper, Chip, Divider, MenuItem, Autocomplete, Typography, Grid, Button, Box, InputLabel, Select, Snackbar, Alert, TextField, FormControl } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
-
-
+import AddIcon from '@mui/icons-material/Add';
+import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
+import ModalPopup from './Modal';
 function ExpenseFileUploadForm() {
+  const [open, setOpen] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
+  const [callModel,setCallModel] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
-    date: '',
-    catgeory: '',
+    date: new Date(),
+    category: '',
     description: '',
+    creditTxn: false,
+    reversalTxn: false,
     amount: '',
   });
-  const [newOption, setNewOption] = useState('');
-  const [selectedOption, setSelectedOption] = useState('');
-
+  const [expenseFromUser,setExpenseFromUser] = useState([{
+    date: new Date(),
+    category: '',
+    description: '',
+    creditTxn: false,
+    reversalTxn: false,
+    amount: '',
+    
+  }]);
   const [uploadStatus, setUploadStatus] = useState("");
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
+  const [categories, setCategories] = useState(['grocery', 'misc', 'emi', 'food order', 'medical']);
+  const [categorySuggestions, setCategorySuggestions] = useState(['insurance', 'householditems', 'utility bills', 'service']);
+  const [newCategory, setNewCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  // useEffect(() => {
+  //   // Hardcoding the initial categories and suggestions
+  //   const acategories = ['grocery', 'misc', 'emi', 'food order', 'medical'];
+  //   const asuggestions = ['insurance', 'householditems', 'utility bills', 'service'];
+  //   setCategories(acategories);
+  //   setCategorySuggestions(asuggestions);
 
+  //   // If using API:
+  //   // const fetchCategoriesAndSuggestions = async () => {
+  //   //   try {
+  //   //     const categoriesResponse = await axios.get('https://api.example.com/categories'); // Replace with your API endpoint
+  //   //     const suggestionsResponse = await axios.get('https://api.example.com/category-suggestions'); // Replace with your API endpoint
 
+  //   //     setCategories(categoriesResponse.data);
+  //   //     setCategorySuggestions(suggestionsResponse.data);
+  //   //   } catch (error) {
+  //   //     console.error('Error fetching data:', error);
+  //   //   }
+  //   // };
 
-  const showAlert = (message, severity = 'error') => {
+  //   // fetchCategoriesAndSuggestions();
+  // }, []);
+  const showAlert = (message, severity) => {
     setAlertMessage(message);
     setAlertSeverity(severity);
     setAlertOpen(true);
@@ -49,8 +84,12 @@ function ExpenseFileUploadForm() {
       console.log('File ready to be uploaded:', formData);
       accountingApi.uploadExpensesFile(formData, (response) => {
         setUploadStatus(response.data?.message);
+        showAlert("File uploaded successfully", "success");
+
       }, (error) => {
         setUploadStatus("Error occurred:" + error);
+        showAlert("Error uploading", "error");
+
       })
     } else {
       console.log('No file selected');
@@ -66,16 +105,67 @@ function ExpenseFileUploadForm() {
     // Handle form submission logic here
     console.log('Form data:', formData);
   };
-  const handleNewOptionChange = (event) => {
-    setNewOption(event.target.value);
+
+  const handleCategoryChange = (event) => {
+    setSelectedCategory(event.target.value);
+    const { name, value } = event.target;
+    setFormData({ ...formData, [name]: event.target.value });
+
   };
 
-  const handleAddOption = () => {
-    if (newOption.trim() !== '') {
-      setSelectedOption(newOption);
-      setNewOption('');
+  const handleNewCategoryChange = (event) => {
+    setNewCategory(event.target.value);
+  };
+
+  const handleAddCategory = () => {
+    if (newCategory.trim() !== '' && !categories.includes(newCategory)) {
+      setCategories([...categories, newCategory]);
+      setNewCategory('');
+      setSelectedCategory(newCategory);
     }
   };
+
+  const handleChipClick = (suggestion) => {
+    setNewCategory(suggestion);
+  };
+
+  const handleAddClick = () => {
+    setExpenseFromUser([...expenseFromUser, formData]);
+
+    setFormData({
+      date: new Date(),
+    category: '',
+    description: '',
+    creditTxn: false,
+    reversalTxn: false,
+    amount: '',
+    });
+    setSelectedCategory('');
+    showAlert("Expense added", "success");
+    console.log(expenseFromUser)
+  };
+
+  const handleSaveAllClick = (event) => {
+    event.preventDefault();
+    const fData = expenseFromUser.slice(1);
+    console.log(fData);
+    let data = 
+    accountingApi.saveExpenses(expenseFromUser, (response) => {
+      showAlert("Expenses saved successfully", "success");
+    }, (error) => {
+      showAlert("Error saving expenses", "error");
+    });
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const handlePreviewClick =() =>
+    {
+      // setCallModel(true);
+      setPreviewData(expenseFromUser);
+      setOpen(true);
+
+    }
   return (
     // <Container>
     //   <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
@@ -210,56 +300,25 @@ function ExpenseFileUploadForm() {
                   flexDirection: 'column',
                   gap: 2,
                 }}
-                onSubmit={handleFormSubmit}
+                // onSubmit={handleFormSubmit}
               >
                 <Typography variant="h6">Form Details</Typography>
-                
-            <TextField
-      label="Date"
-      variant="outlined"
-      type="date" // Set type to 'date' for date input
-      value={formData.value}
-      onChange={handleInputChange}
-      fullWidth
-      InputLabelProps={{
-        shrink: true, // To shrink the label when a date is selected
-      }}
-    />
-                
+
                 <TextField
-                  label="Category"
+                  label="Date"
                   variant="outlined"
-                  name="category"
-                  value={formData.category}
+                  type="date" // Set type to 'date' for date input
+                  name = "date"
+                  value={formData.date}
                   onChange={handleInputChange}
                   fullWidth
+                  InputLabelProps={{
+                    shrink: true, // To shrink the label when a date is selected
+                  }}
+                  // required
                 />
-                {/* <InputLabel id="dropdown-label">Choose or Add Option</InputLabel>
-        <Select
-          labelId="dropdown-label"
-          value={selectedOption}
-          onChange={handleInputChange}
-          fullWidth
-        >
-          {/* Predefined options */}
-          {/* <MenuItem value="option1">Option 1</MenuItem>
-          <MenuItem value="option2">Option 2</MenuItem>
-          <MenuItem value="option3">Option 3</MenuItem>
-          {/* Render new option input field */}
-          {/* <MenuItem disabled>
-            <TextField
-              label="Add New Option"
-              value={newOption}
-              onChange={handleNewOptionChange}
-              fullWidth
-            />
-          </MenuItem>
-        </Select> */}
-        {/* <Box mt={2}> Add margin top to space out the button
-        <Button variant="contained" onClick={handleAddOption}>
-          Add Option
-        </Button>
-      </Box>   */}
+
+
                 <TextField
                   label="Description"
                   variant="outlined"
@@ -269,6 +328,7 @@ function ExpenseFileUploadForm() {
                   multiline
                   rows={4}
                   fullWidth
+                  // required
                 />
                 <TextField
                   label="Amount"
@@ -277,15 +337,86 @@ function ExpenseFileUploadForm() {
                   value={formData.amount}
                   onChange={handleInputChange}
                   fullWidth
+                  // required
                 />
-                <Button variant="contained" color="primary" type="submit">
-                  Submit
-                </Button>
+                {/* Dropdown for existing categories */}
+                <FormControl fullWidth>
+                  <InputLabel id="category-select-label">Category</InputLabel>
+                  <Select
+                    labelId="category-select-label"
+                    label="Catgeory"
+                    name = "category"
+                    value={selectedCategory}
+                    onChange={handleCategoryChange}
+                    fullWidth
+                    // required
+                  >
+                    {categories.map((category) => (
+                      <MenuItem key={category} value={category}>
+                        {category}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+
+                {/* TextField for new category input */}
+                <Box mt={2}>
+                  <Grid container>
+                    <Grid item   xs={12} md={10}>
+                    <TextField
+                    label="Choose new category"
+                    variant="outlined"
+                    value={newCategory}
+                    onChange={handleNewCategoryChange}
+                    fullWidth
+                  />
+                    </Grid>
+                    <Grid item xs={12} md={1}>
+                    <Button onClick={handleAddCategory} sx={{mt:'10px',ml:'15px'}}><AddCircleRoundedIcon />
+                    </Button>
+                        
+                    </Grid>
+                  </Grid>
+                 </Box> 
+                {/* Chips for category suggestions */}
+                <Box mt={2} display="flex" flexWrap="wrap" gap={1}>
+                  {categorySuggestions.map((suggestion) => (
+                    <Chip
+                      key={suggestion}
+                      label={suggestion}
+                      onClick={() => handleChipClick(suggestion)}
+                    />
+                  ))}
+                </Box>
+
+                <br />
+                <Grid container spacing={5.5} sx={{ alignItems: 'center',
+                  justifyContent: 'center', }}>
+                  <Grid item xs={12} md={3}>
+                    <Button variant="contained" color="primary" type="button" fullWidth onClick={handleAddClick}>Add</Button>
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Button variant="contained" color="secondary" type="button" fullWidth onClick = {handlePreviewClick}>
+                      Preview
+                    </Button>
+                  </Grid>
+                  <Grid item xs={12} md={5}>
+                    <Button variant="contained" color="success" type="submit" fullWidth onClick = {handleSaveAllClick}>
+                      Save All
+                    </Button>
+                  </Grid>
+                </Grid>
               </Box>
             </Grid>
           </Grid>
         </Box>
       </Paper>
+      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={() => setAlertOpen(false)}>
+        <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: '100%' }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
+<ModalPopup open={open} handleClose={handleClose} data={previewData} from= "efileuploadforpreview"/>  
     </Container>
 
 
