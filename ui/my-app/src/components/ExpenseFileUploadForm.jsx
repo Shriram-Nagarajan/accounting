@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import accountingApi from '../httputil/accountingApi';
-import { Container, Paper, Chip, Divider, MenuItem, Autocomplete, Typography, Grid, Button, Box, InputLabel, Select, Snackbar, Alert, TextField, FormControl } from '@mui/material';
+import { Container, Paper, Chip, Divider, MenuItem, Typography, Grid, Button, Box, InputLabel, Select, Snackbar, Alert, TextField, FormControl } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
-import AddIcon from '@mui/icons-material/Add';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import ModalPopup from './Modal';
 function ExpenseFileUploadForm() {
   const [open, setOpen] = useState(false);
   const [previewData, setPreviewData] = useState(null);
-  const [callModel,setCallModel] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     date: new Date(),
@@ -100,16 +98,10 @@ function ExpenseFileUploadForm() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    // Handle form submission logic here
-    console.log('Form data:', formData);
-  };
-
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
     const { name, value } = event.target;
-    setFormData({ ...formData, [name]: event.target.value });
+    setFormData({ ...formData, [name]: value });
 
   };
 
@@ -130,8 +122,18 @@ function ExpenseFileUploadForm() {
   };
 
   const handleAddClick = () => {
+    const isEmpty = Object.values(formData).some(value => 
+      (typeof value === 'string' && value.trim() === '') ||
+      value === null ||
+      value === undefined
+    );
+    if(isEmpty)
+      {
+        showAlert("Date,Description,Amount,Category are mandatory. Please fill out.","error")
+      }
+    else
+    {
     setExpenseFromUser([...expenseFromUser, formData]);
-
     setFormData({
       date: new Date(),
     category: '',
@@ -143,14 +145,18 @@ function ExpenseFileUploadForm() {
     setSelectedCategory('');
     showAlert("Expense added", "success");
     console.log(expenseFromUser)
+  }
   };
 
   const handleSaveAllClick = (event) => {
     event.preventDefault();
     const fData = expenseFromUser.slice(1);
     console.log(fData);
-    let data = 
-    accountingApi.saveExpenses(expenseFromUser, (response) => {
+    const data = {
+      "deleteExisting" : false,
+      "expenseList": fData,
+  }
+    accountingApi.saveExpenses(data, (response) => {
       showAlert("Expenses saved successfully", "success");
     }, (error) => {
       showAlert("Error saving expenses", "error");

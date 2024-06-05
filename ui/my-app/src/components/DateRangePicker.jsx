@@ -15,6 +15,8 @@ function DateRangePickerComponent(props) {
                     onChange={(newValue) => {
                         props.onChange(newValue ? dayjs(newValue) : null);
                     }}
+                    views={['year', 'month', 'day']} // Specify the views here
+                    openTo="day" // Open the picker to the year view initially
                 />
             </Box>
         </LocalizationProvider>

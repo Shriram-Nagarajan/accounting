@@ -15,7 +15,21 @@ const queryParamStr = (queryParams) => {
 }
 
 const get = (url, parameters, onSuccess, onError) => {
-    axios.get(url + queryParamStr(parameters))
+    axios.get(url +queryParamStr(parameters))
+        .then(function (response) {
+            console.log(response);
+            onSuccess(response);
+        })
+        .catch(function (error) {
+            console.log(error);
+            onError(error);
+        })
+        .finally(function () {
+            
+        });
+}
+const post = (url, formData, onSuccess, onError) => {
+    axios.post(url ,formData)
         .then(function (response) {
             console.log(response);
             onSuccess(response);
@@ -47,7 +61,7 @@ const postMultipartFormData = (url, parameters, onSuccess, onError) => {
     });
 }
 
-const http = {get, postMultipartFormData};
+const http = {get, postMultipartFormData,post};
 
 export default http;
 

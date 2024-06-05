@@ -71,7 +71,7 @@ function CategoryWiseExpensesTable(props) {
                 </StyledTableCell>
                 {/* <TableCell align="right">{row.number}</TableCell> */}
                 <StyledTableCell align="center">{row.numOfExpenses}</StyledTableCell>
-                <StyledTableCell align="right">{row.totalExpenditure}</StyledTableCell>
+                <StyledTableCell align="right">{row.totalExpenditure.toFixed(2)}</StyledTableCell>
                 {/* <TableCell align="right">{row.protein}</TableCell> */}
               </StyledTableRow>
               

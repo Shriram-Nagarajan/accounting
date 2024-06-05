@@ -33,6 +33,17 @@ function PieChart(props) {
                         },
                         tooltip: {
                             enabled: true,
+                            callbacks: {
+                                label: function(tooltipItem) {
+                                    const data = tooltipItem.chart.data;
+                                    const dataset = data.datasets[tooltipItem.datasetIndex];
+                                    const total = dataset.data.reduce((sum, value) => sum + value, 0);
+                                    const currentValue = dataset.data[tooltipItem.dataIndex];
+                                    const percentage = ((currentValue / total) * 100).toFixed(2);
+                                    return `Spent: ${currentValue} (${percentage}%)`;
+                                    //${data.labels[tooltipItem.dataIndex]}
+                                }
+                            }
                         }
                        
                     },
@@ -47,11 +58,12 @@ function PieChart(props) {
                     onHover: (event, chartElement) => {
                         event.native.target.style.cursor = chartElement.length ? 'pointer' : 'default';
                     },
-                    onClick:(event,element) =>
-                        {
+                    onClick: (event, element) => {
+                        if (element.length > 0) {
                             console.log(props.data.labels[element[0].index]);
                             props.onSliceClick(props.data.labels[element[0].index]);
-                        },
+                        }
+                    },
                 }}
             />
         </div>

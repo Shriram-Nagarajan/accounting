@@ -1,5 +1,6 @@
 import React from 'react';
 import NavbarAndDrawer from './components/Navbar';
+import Footer from './components/Footer';
 
 
 function App() {

@@ -122,10 +122,10 @@ function ExpenseInsights()
         {dataPresent && (
           <Box mt={4}>
             <Grid container spacing={4}>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={7}>
                 <CategoryWiseExpensesTable expenses={expenses} />
               </Grid>
-              <Grid item xs={12} md={6}>
+              <Grid item xs={12} md={5}>
                 <PieChart data={state} title={pieTitle} onSliceClick={handlePieSliceClick} />
               </Grid>
             </Grid>
