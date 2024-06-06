@@ -100,6 +100,7 @@ function NavbarAndDrawer() {
                 <Box
                     component="main"
                     sx={{
+                        width:'100%',
                         flexGrow: 1,
                         p: 3,
                         //paddingBottom: '64px',
