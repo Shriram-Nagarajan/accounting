@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box,TextField } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 function DateRangePickerComponent(props) {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,width:'100%' }}>
                 <DatePicker
                     label={props.label}
                     value={props.value ? dayjs(props.value) : null}
@@ -17,6 +17,14 @@ function DateRangePickerComponent(props) {
                     }}
                     views={['year', 'month', 'day']} // Specify the views here
                     openTo="day" // Open the picker to the year view initially
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            fullWidth
+                            error={props.error}
+                            helperText={props.helperText}
+                        />
+                    )}
                 />
             </Box>
         </LocalizationProvider>

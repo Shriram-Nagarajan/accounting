@@ -5,6 +5,9 @@ import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import ModalPopup from './Modal';
+import Badge from '@mui/material/Badge';
+import FormHelperText from '@mui/material/FormHelperText';
+import DateRangePickerComponent from './DateRangePicker';
 function ExpenseFileUploadForm() {
   const [open, setOpen] = useState(false);
   const [previewData, setPreviewData] = useState(null);
@@ -17,15 +20,16 @@ function ExpenseFileUploadForm() {
     reversalTxn: false,
     amount: '',
   });
-  const [expenseFromUser,setExpenseFromUser] = useState([{
+  const [expenseFromUser, setExpenseFromUser] = useState([{
     date: new Date(),
     category: '',
     description: '',
     creditTxn: false,
     reversalTxn: false,
     amount: '',
-    
+
   }]);
+  const [count, setCount] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("");
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
@@ -34,6 +38,7 @@ function ExpenseFileUploadForm() {
   const [categorySuggestions, setCategorySuggestions] = useState(['insurance', 'householditems', 'utility bills', 'service']);
   const [newCategory, setNewCategory] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [formErrors, setFormErrors] = useState({});
   // useEffect(() => {
   //   // Hardcoding the initial categories and suggestions
   //   const acategories = ['grocery', 'misc', 'emi', 'food order', 'medical'];
@@ -122,56 +127,84 @@ function ExpenseFileUploadForm() {
   };
 
   const handleAddClick = () => {
-    const isEmpty = Object.values(formData).some(value => 
+    validateForm(formData);
+    const isEmpty = Object.values(formData).some(value =>
       (typeof value === 'string' && value.trim() === '') ||
       value === null ||
       value === undefined
     );
-    if(isEmpty)
-      {
-        showAlert("Date,Description,Amount,Category are mandatory. Please fill out.","error")
-      }
-    else
-    {
-    setExpenseFromUser([...expenseFromUser, formData]);
-    setFormData({
-      date: new Date(),
-    category: '',
-    description: '',
-    creditTxn: false,
-    reversalTxn: false,
-    amount: '',
-    });
-    setSelectedCategory('');
-    showAlert("Expense added", "success");
-    console.log(expenseFromUser)
-  }
+    const errors = validateForm(formData);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+    }
+    else if (isEmpty) {
+      showAlert("Date,Description,Amount,Category are mandatory. Please fill out.", "error")
+    }
+    else {
+      setExpenseFromUser([...expenseFromUser, formData]);
+      setFormData({
+        date: new Date(),
+        category: '',
+        description: '',
+        creditTxn: false,
+        reversalTxn: false,
+        amount: '',
+      });
+      setSelectedCategory('');
+      setCount(count + 1);
+      showAlert("Expense added", "success");
+      console.log(expenseFromUser)
+    }
   };
 
-  const handleSaveAllClick = (event) => {
-    event.preventDefault();
-    const fData = expenseFromUser.slice(1);
-    console.log(fData);
-    const data = {
-      "deleteExisting" : false,
-      "expenseList": fData,
-  }
-    accountingApi.saveExpenses(data, (response) => {
-      showAlert("Expenses saved successfully", "success");
-    }, (error) => {
-      showAlert("Error saving expenses", "error");
-    });
-  };
+
   const handleClose = () => {
     setOpen(false);
   };
-  const handlePreviewClick =() =>
-    {
-      // setCallModel(true);
-      setPreviewData(expenseFromUser);
-      setOpen(true);
+  const handleSaveAPISuccess = () => {
+    handleClose();
+    setExpenseFromUser([]);
+    setFormData({
+      date: new Date(),
+      category: '',
+      description: '',
+      creditTxn: false,
+      reversalTxn: false,
+      amount: '',
+    });
+    setSelectedCategory('');
+    setCount(0);
+  }
+  const handlePreviewClick = () => {
+    const fData = expenseFromUser;//.slice(1);
+    setPreviewData(fData);
+    setOpen(true);
 
+  }
+  const validateForm = (data) => {
+    const errors = {};
+    const scriptTagPattern = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+
+    if (!data.date) {
+      errors.date = 'Date is required';
     }
+    if (!data.category) {
+      errors.category = 'Category is required';
+    } else if (scriptTagPattern.test(data.category)) {
+      errors.category = 'Category must not contain script tags';
+    }
+    if (!data.description) {
+      errors.description = 'Description is required';
+    } else if (scriptTagPattern.test(data.description)) {
+      errors.description = 'Description must not contain script tags';
+    }
+    if (!data.amount || isNaN(data.amount)) {
+      errors.amount = 'Amount is required and must be a number';
+    }
+
+    return errors;
+  };
+
   return (
     // <Container>
     //   <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
@@ -306,11 +339,11 @@ function ExpenseFileUploadForm() {
                   flexDirection: 'column',
                   gap: 2,
                 }}
-                // onSubmit={handleFormSubmit}
+              // onSubmit={handleFormSubmit}
               >
                 <Typography variant="h6">Form Details</Typography>
 
-                <TextField
+                {/* <TextField
                   label="Date"
                   variant="outlined"
                   type="date" // Set type to 'date' for date input
@@ -321,9 +354,19 @@ function ExpenseFileUploadForm() {
                   InputLabelProps={{
                     shrink: true, // To shrink the label when a date is selected
                   }}
+                  error={!!formErrors.date}
+                  helperText={formErrors.date}
                   // required
+                /> */}
+                <DateRangePickerComponent
+                  label="Date"
+                  value={formData.date}
+                  onChange={handleInputChange}
+                  fullWidth
+                  error={!!formErrors.date}
+                  helperText={formErrors.date}
+                  
                 />
-
 
                 <TextField
                   label="Description"
@@ -334,7 +377,9 @@ function ExpenseFileUploadForm() {
                   multiline
                   rows={4}
                   fullWidth
-                  // required
+                  error={!!formErrors.description}
+                  helperText={formErrors.description}
+                // required
                 />
                 <TextField
                   label="Amount"
@@ -343,19 +388,20 @@ function ExpenseFileUploadForm() {
                   value={formData.amount}
                   onChange={handleInputChange}
                   fullWidth
-                  // required
+                  error={!!formErrors.amount}
+                  helperText={formErrors.amount}
+                // required
                 />
                 {/* Dropdown for existing categories */}
-                <FormControl fullWidth>
+                <FormControl fullWidth error={!!formErrors.category}>
                   <InputLabel id="category-select-label">Category</InputLabel>
                   <Select
                     labelId="category-select-label"
                     label="Catgeory"
-                    name = "category"
+                    name="category"
                     value={selectedCategory}
                     onChange={handleCategoryChange}
                     fullWidth
-                    // required
                   >
                     {categories.map((category) => (
                       <MenuItem key={category} value={category}>
@@ -363,27 +409,28 @@ function ExpenseFileUploadForm() {
                       </MenuItem>
                     ))}
                   </Select>
+                  {formErrors.category && <FormHelperText>{formErrors.category}</FormHelperText>}
                 </FormControl>
 
                 {/* TextField for new category input */}
                 <Box mt={2}>
                   <Grid container>
-                    <Grid item   xs={12} md={10}>
-                    <TextField
-                    label="Choose new category"
-                    variant="outlined"
-                    value={newCategory}
-                    onChange={handleNewCategoryChange}
-                    fullWidth
-                  />
+                    <Grid item xs={12} md={10}>
+                      <TextField
+                        label="Choose new category"
+                        variant="outlined"
+                        value={newCategory}
+                        onChange={handleNewCategoryChange}
+                        fullWidth
+                      />
                     </Grid>
                     <Grid item xs={12} md={1}>
-                    <Button onClick={handleAddCategory} sx={{mt:'10px',ml:'15px'}}><AddCircleRoundedIcon />
-                    </Button>
-                        
+                      <Button onClick={handleAddCategory} sx={{ mt: '10px' }}><AddCircleRoundedIcon />
+                      </Button>
+
                     </Grid>
                   </Grid>
-                 </Box> 
+                </Box>
                 {/* Chips for category suggestions */}
                 <Box mt={2} display="flex" flexWrap="wrap" gap={1}>
                   {categorySuggestions.map((suggestion) => (
@@ -396,21 +443,26 @@ function ExpenseFileUploadForm() {
                 </Box>
 
                 <br />
-                <Grid container spacing={5.5} sx={{ alignItems: 'center',
-                  justifyContent: 'center', }}>
-                  <Grid item xs={12} md={3}>
-                    <Button variant="contained" color="primary" type="button" fullWidth onClick={handleAddClick}>Add</Button>
+                <Grid container spacing={1} sx={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Grid item xs={12} md={6}>
+                    <Button variant="contained" color="primary" type="button" fullWidth onClick={handleAddClick}>Add Expense</Button>
                   </Grid>
-                  <Grid item xs={12} md={4}>
-                    <Button variant="contained" color="secondary" type="button" fullWidth onClick = {handlePreviewClick}>
-                      Preview
-                    </Button>
+                  <Grid item xs={12} md={6}>
+                    <Badge color="primary" badgeContent={count}>
+                      <Button variant="contained" color="secondary" type="button" fullWidth onClick={handlePreviewClick}>
+                        Preview & Save
+                      </Button>
+                    </Badge>
+
                   </Grid>
-                  <Grid item xs={12} md={5}>
+                  {/* <Grid item xs={12} md={5}>
                     <Button variant="contained" color="success" type="submit" fullWidth onClick = {handleSaveAllClick}>
                       Save All
                     </Button>
-                  </Grid>
+                  </Grid> */}
                 </Grid>
               </Box>
             </Grid>
@@ -422,7 +474,7 @@ function ExpenseFileUploadForm() {
           {alertMessage}
         </Alert>
       </Snackbar>
-<ModalPopup open={open} handleClose={handleClose} data={previewData} from= "efileuploadforpreview"/>  
+      <ModalPopup open={open} handleClose={handleClose} data={previewData} from="efileuploadforpreview" onApiSuccess={handleSaveAPISuccess} />
     </Container>
 
 

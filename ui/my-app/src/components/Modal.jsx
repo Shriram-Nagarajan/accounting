@@ -1,6 +1,6 @@
 // SliceModal.jsx
 import React,{useEffect, useState} from 'react';
-import { Modal, Box, Typography } from '@mui/material';
+import { Modal, Box, Typography,Alert,Button,Snackbar } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -9,6 +9,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
+import accountingApi from '../httputil/accountingApi';
 
 
 const style = {
@@ -43,86 +44,128 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
       border: 0,
     },
   }));
+  
+ 
+function ModalPopup({ open, handleClose, data,from,onApiSuccess }) {
+  let index =0;
+  const [alertOpen, setAlertOpen] = useState(false);
+const [alertMessage, setAlertMessage] = useState('');
+const [alertSeverity, setAlertSeverity] = useState('success');
 
-
-function ModalPopup({ open, handleClose, data,from }) {
   const[isPreview,setIsPreview] = useState(false);
   const [sumTotalExpenditure, setSumTotalExpenditure] = useState(0);
+ 
   useEffect(() => {
     if (from === "einsights") {
       const totalExpenditure = data ? data.map(exp => exp.amount).reduce((acc, val) => acc + val, 0) : 0;
       setSumTotalExpenditure(totalExpenditure);
-    } else if (from === "efileuploadforpreview") {
+    } 
+    else if (from === "efileuploadforpreview") {
       setIsPreview(true);
+      
+ 
     }
   }, [data, from]);
+  const handleSaveAllClick = (event) => {
+    if(isPreview)
+      {
+        event.preventDefault();
+    //const fData = data.slice(1);
+    //console.log(fData);
+    const reqData = {
+      "deleteExisting" : false,
+      "expenseList": data,
+  }
+    accountingApi.saveExpenses(reqData, (response) => {
+      showAlert("Expenses saved successfully", "success");
+      onApiSuccess();
+    }, (error) => {
+      showAlert("Error saving expenses", "error");
+    });
+      }
+    
+  }; 
+  const showAlert = (message, severity) => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setAlertOpen(true);
+  };
   const formatDate = (date) => {
     const d = new Date(date);
     return d.toLocaleDateString('en-GB'); // Adjust the format as needed
   };
     return (
-        <Modal
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-        >
-            <Box sx={style}>
-            <div >
-            {data?
-            <TableContainer  component={Paper} sx={{ maxHeight: 450 }} >
-        <Table stickyHeader sx={{ minWidth: 550 }} size = "small" aria-label="customizedtable">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell align="center">Date</StyledTableCell>
-              <StyledTableCell align="center">Description</StyledTableCell>
-              <StyledTableCell align="left">Amount&nbsp;(in ₹)</StyledTableCell>
-              {isPreview ? <StyledTableCell align="left">Category</StyledTableCell> : null}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((row) => (
-              <StyledTableRow
-                key={row.date}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <StyledTableCell align="left" component="th" scope="row" sx={{width:"120px"}}>
-                {formatDate(row.date)}
-                </StyledTableCell>
-                <StyledTableCell align="left">{row.description}</StyledTableCell>
-                {isPreview ? <StyledTableCell align="left">{row.category}</StyledTableCell> : null}
+        <><Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div>
+            {data ?
+              <TableContainer component={Paper} sx={{ maxHeight: 450 }}>
+                <Table stickyHeader sx={{ minWidth: 550 }} size="small" aria-label="customizedtable">
+                  <TableHead>
+                    <TableRow>
+                      <StyledTableCell align="center">Date</StyledTableCell>
+                      <StyledTableCell align="center">Description</StyledTableCell>
+                      <StyledTableCell align="left">Amount&nbsp;(in ₹)</StyledTableCell>
+                      {isPreview ? <StyledTableCell align="left">Category</StyledTableCell> : null}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {data.map((row) => (
+                      <StyledTableRow
+                        key={++index}
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <StyledTableCell align="left" component="th" scope="row" sx={{ width: "120px" }}>
+                          {formatDate(row.date)}
+                        </StyledTableCell>
+                        <StyledTableCell align="left">{row.description}</StyledTableCell>
+                        <StyledTableCell align="right" sx={{ width: "120px" }}>{row.amount}</StyledTableCell>
+                        {isPreview ? <StyledTableCell align="left" sx={{ width: "50px" }}>{row.category}</StyledTableCell> : null}
 
-                <StyledTableCell align="right" sx={{width:"120px"}}>{row.amount}</StyledTableCell>
 
-              </StyledTableRow>
-              
-            ))}
-            {!isPreview?(<StyledTableRow >
-            <StyledTableCell align="left" colSpan={2} sx={{fontWeight : "bold"}}>Total expenditure</StyledTableCell>
-            <StyledTableCell align="right" sx={{fontWeight : "bold"}}>₹{sumTotalExpenditure}</StyledTableCell>
-          </StyledTableRow>) :null}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      :null}
-            
+                      </StyledTableRow>
+
+                    ))}
+                    {!isPreview ? (<StyledTableRow>
+                      <StyledTableCell align="left" colSpan={2} sx={{ fontWeight: "bold" }}>Total expenditure</StyledTableCell>
+                      <StyledTableCell align="right" sx={{ fontWeight: "bold" }}>₹{sumTotalExpenditure}</StyledTableCell>
+                    </StyledTableRow>) : null}
+                    {isPreview ? (<StyledTableRow>
+                      <StyledTableCell align="right" colspan={4}><Button variant="contained" color="success" type="submit" fullWidth onClick={handleSaveAllClick}>
+                        Save All
+                      </Button></StyledTableCell>
+                    </StyledTableRow>) : null}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              : null}
+
             {/* <span>{'Total expenditure: Rs. ' + sumTotalExpenditure}</span> */}
-        </div>
-                {/* <Typography id="modal-modal-title" variant="h6" component="h2">
-                    Slice Details
-                </Typography>
-                <Typography id="modal-modal-description" sx={{ mt: 2 }}>
-                    {data ? (
-                        <>
-                            <p>Label: {data.label}</p>
-                            <p>Value: {data.value}</p>
-                        </>
-                    ) : (
-                        <p>No data available</p>
-                    )}
-                </Typography> */}
-            </Box>
-        </Modal>
+          </div>
+          {/* <Typography id="modal-modal-title" variant="h6" component="h2">
+        Slice Details
+    </Typography>
+    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+        {data ? (
+            <>
+                <p>Label: {data.label}</p>
+                <p>Value: {data.value}</p>
+            </>
+        ) : (
+            <p>No data available</p>
+        )}
+    </Typography> */}
+        </Box>
+      </Modal><Snackbar open={alertOpen} autoHideDuration={6000} onClose={() => setAlertOpen(false)}>
+          <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: '100%' }}>
+            {alertMessage}
+          </Alert>
+        </Snackbar></>
     );
 }
 
