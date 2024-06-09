@@ -358,7 +358,8 @@ function ExpenseFileUploadForm() {
                   helperText={formErrors.date}
                   // required
                 /> */}
-                <DateRangePickerComponent
+                
+                <DateRangePickerComponent xs={12} md={6}
                   label="Date"
                   value={formData.date}
                   onChange={handleInputChange}

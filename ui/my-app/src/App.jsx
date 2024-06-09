@@ -1,14 +1,18 @@
-import React from 'react';
-import NavbarAndDrawer from './components/Navbar';
-import Footer from './components/Footer';
-
+import React, { useState ,useEffect} from 'react';
+import PostLogin from './components/PostLogin';
+import PreLogin from './components/PreLogin';
+import { useSelector } from 'react-redux';
 
 function App() {
-
-    
+    const isLoggedIn = useSelector((state) => state.auth.isLoggedIn)
+    //const [isLoggedIn,setIsLoggedIn] = useState(false);
+    // useEffect(() => {
+    //     // Simulate a login for testing purposes
+    //     setIsLoggedIn(false);
+    // }, []);    
 
     return (
-       <NavbarAndDrawer />
+        isLoggedIn ? <PostLogin startPage ="/home"/> : <PreLogin />
     );
 }
 
