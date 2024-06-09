@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Routes, Route,useNavigate  } from 'react-router-dom';
 import { CssBaseline, Box, Toolbar, Typography, Container, AppBar, IconButton, Drawer, List, ListItemButton, ListItemText, Divider } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import WestRoundedIcon from '@mui/icons-material/WestRounded';
@@ -13,10 +13,36 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import InputRoundedIcon from '@mui/icons-material/InputRounded';
 import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
 import Footer from './Footer';
+import UserAvatar from '../components/Avatar';
+import UserDropdown from '../components/DropdownforUserAvatar';
+import { logout } from '../actions/authActions';
+import constants from '../common/constants';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 const drawerWidth = 240;
 
-function NavbarAndDrawer() {
+function PostLogin(props) {
+    const userName = useSelector(state => state.auth.userName); // assuming you store user info in Redux state
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    useEffect(() => {
+        const currentPath = window.location.pathname;
+        console.log(currentPath);
+        console.log(props.startPage);
+        if (props.startPage && currentPath !== props.startPage) {
+            navigate(props.startPage);
+        }
+        // if (props.startPage && currentPath === "/") {
+        //     navigate(props.startPage);
+        // }
+        
+    }, []);
+    // useEffect(() => {
+    //     if (props.startPage) {
+    //         navigate(props.startPage);
+    //     }
+    // }, [navigate, props.startPage]);
     const [mobileOpen, setMobileOpen] = React.useState(false);
     const [drawerOpen, setDrawerOpen] = React.useState(true);
     const theme = useTheme();
@@ -33,7 +59,11 @@ function NavbarAndDrawer() {
     const handleDrawerClose = () => {
         setDrawerOpen(false);
     };
-
+    const handleLogout = () => {
+        dispatch(logout()); // dispatch the logout action
+        // You may want to redirect the user to the login page after logout
+        navigate(constants.loginURL);
+      };
     const drawer = (
         <div>
             <Toolbar>
@@ -44,8 +74,9 @@ function NavbarAndDrawer() {
                 )}
             </Toolbar>
             <Divider />
+            
             <List>
-                <ListItemButton component={Link} to="/">
+                <ListItemButton component={Link} to="/home">
                     <HomeRoundedIcon color="action" fontSize="large" />&nbsp;<ListItemText primary="Home" />
                 </ListItemButton>
                 <ListItemButton component={Link} to="/file-upload">
@@ -64,6 +95,7 @@ function NavbarAndDrawer() {
                 <CssBaseline />
                 <AppBar position="fixed">
                     <Toolbar>
+                        <div>
                         <IconButton
                             color="inherit"
                             aria-label="open drawer"
@@ -73,11 +105,22 @@ function NavbarAndDrawer() {
                         >
                             <MenuIcon />
                         </IconButton>
-                        <Typography variant="h6" noWrap component="div">
+                        <Typography variant="h6" noWrap component="div" sx={{marginLeft: '30px',marginTop: '-36px'}}>
                             MyApp
                         </Typography>
+                        </div>
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            {/* <Box sx={{ ml: 130 }}>
+              <UserAvatar userName={userName} />
+            </Box> */}
+            <Box sx={{ ml: 130 }}>
+            <UserDropdown userName={userName} onLogout={handleLogout} />
+            </Box>
+          </Box>
                     </Toolbar>
                 </AppBar>
+                
+
                 <Box
                     component="nav"
                     sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
@@ -115,7 +158,7 @@ function NavbarAndDrawer() {
                     <Toolbar />
                     <Container>
                         <Routes>
-                            <Route path="/" element={<Home />} />
+                            <Route path="/home" element={<Home />} />
                             <Route path="/file-upload" element={<FileUpload />} />
                             <Route path="/expense-insights" element={<ExpenseInsights />} />
                         </Routes>
@@ -123,11 +166,12 @@ function NavbarAndDrawer() {
                 </Box>
             </Box>
             <Footer drawerOpen={drawerOpen} />
+            
         </>
     );
 }
 
-export default NavbarAndDrawer;
+export default PostLogin;
 
 
 

@@ -9,9 +9,23 @@ import { Container, Paper, Typography, Grid, Button, Box, AppBar, Toolbar, Snack
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
 import dayjs from 'dayjs';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
+import CircularProgress from '@mui/material/CircularProgress';
+// import { makeStyles } from '@mui/styles';
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
-
-
+// const useStyles = makeStyles((theme) => ({
+//   loaderContainer: {
+//     position: 'fixed',
+//     top: '0',
+//     left: '0',
+//     width: '100%',
+//     height: '100%',
+//     display: 'flex',
+//     justifyContent: 'center',
+//     alignItems: 'center',
+//     backgroundColor: 'rgba(255, 255, 255, 0.7)', // semi-transparent background
+//     zIndex: '9999', // ensure it's above other elements
+//   },
+// }));
 
 function ExpenseInsights()
 {
@@ -25,7 +39,8 @@ function ExpenseInsights()
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
     const [alertSeverity, setAlertSeverity] = useState('success');
-  
+    const [loading, setLoading] = useState(false);
+    //const classes = useStyles();
     const handleFromDateChange = (newValue) => {
         setFromDate(newValue);
       };
@@ -62,11 +77,14 @@ function ExpenseInsights()
         console.log(data);
         var catId = expenses.find(x => x.categoryName === data).categoryId;
         console.log(catId);
+        setLoading(true);
         accountingApi.getExpenses({ categoryId: catId, fromDate: fromDate.format('YYYY-MM-DD'), toDate: toDate.format('YYYY-MM-DD') }, (response) => {
+          setLoading(false);
           console.log("getExpenses: " + JSON.stringify(response.data));
           setSliceData(response.data);
           setOpen(true);
         }, (error) => {
+          setLoading(false);
           console.error(error);
           showAlert('Error fetching expenses','error');
         });
@@ -91,6 +109,9 @@ function ExpenseInsights()
       };
     return(
         <Container >
+          {/* <div className={classes.loaderContainer}>
+      <CircularProgress />
+    </div> */}
             {/* <AppBar position="static">
         <Toolbar>
           <AccountBalanceIcon sx={{ mr: 2 }} />

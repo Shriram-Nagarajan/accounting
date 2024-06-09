@@ -36,7 +36,7 @@ function Footer({ drawerOpen }) {
                             <Typography variant="h6" gutterBottom>
                                 Quick Links
                             </Typography>
-                            <Link href="/" color="inherit" variant="body2" underline="none">
+                            <Link href="/home" color="inherit" variant="body2" underline="none">
                                 Home
                             </Link>
                             <br />
