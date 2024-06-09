@@ -1,5 +1,6 @@
 package com.um;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import javax.sql.DataSource;
@@ -13,6 +14,10 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.common.Properties;
+import com.common.session.MemcacheImpl;
+import com.common.session.SessionCache;
 
 @SpringBootApplication(scanBasePackages = {"com.um","com.um.*"})
 @PropertySource("classpath:*.properties")
@@ -48,6 +53,22 @@ public class UserManagement {
         dataSource.setPassword("root");
         return dataSource;
 	}
+    
+    @Bean("authDataSource")
+    DataSource authDataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/authdb");
+        dataSource.setUsername("root");
+        dataSource.setPassword("root");
+        return dataSource;
+	}
+    
+    @Bean("memCache")
+    SessionCache sessionCache(Properties userManagementProperties) throws IOException {
+    	return new MemcacheImpl(userManagementProperties.getProperty("ip_address"),
+    			userManagementProperties.getProperty("port"));
+    }
     
 	@Bean
 	public WebMvcConfigurer corsConfigurer() {

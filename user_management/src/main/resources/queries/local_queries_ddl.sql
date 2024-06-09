@@ -1,3 +1,12 @@
+CREATE SCHEMA if not exists `authdb` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci ;
+
+DROP table if exists `authdb`.`properties`;
+CREATE TABLE `authdb`.`properties` (
+    prop_key VARCHAR(50) PRIMARY KEY,
+    prop_value VARCHAR(200)
+)  ENGINE=INNODB DEFAULT CHARACTER SET=UTF8MB4 COLLATE = UTF8MB4_UNICODE_CI;
+
+
 create schema if not exists userdb charset utf8mb4 collate utf8mb4_unicode_ci;
 DROP table if exists userdb.users;
 CREATE TABLE userdb.users (

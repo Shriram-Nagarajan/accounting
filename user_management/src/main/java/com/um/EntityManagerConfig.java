@@ -2,10 +2,9 @@ package com.um;
 
 import javax.sql.DataSource;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -15,18 +14,15 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import jakarta.persistence.EntityManagerFactory;
 
 @Configuration
-@EntityScan(basePackages = {"com.um.entity"})
-@EnableJpaRepositories(basePackages = {"com.um.repository"})
 @EnableTransactionManagement
-public class JpaConfig {
+public class EntityManagerConfig {
 
     @Bean("entityManagerFactory")
-    LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource usersDataSource) {
+    LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("userDataSource") DataSource userDataSource) {
     	LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
     	bean.setPackagesToScan("com.um.entity");
-    	bean.setDataSource(usersDataSource);
+    	bean.setDataSource(userDataSource);
     	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
-//    	bean.setPersistenceProviderClass(AccountsPersistenceProvider.class);
     	return bean;
     }
     
@@ -34,4 +30,20 @@ public class JpaConfig {
     public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
     }
+    
+
+    @Bean("authDbEntityManagerFactory")
+    LocalContainerEntityManagerFactoryBean authDbEntityManagerFactory(@Qualifier("authDataSource") DataSource authDataSource) {
+    	LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
+    	bean.setPackagesToScan("com.um.auth.entity");
+    	bean.setDataSource(authDataSource);
+    	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+    	return bean;
+    }
+    
+    @Bean
+    public PlatformTransactionManager authDbTransactionManager(EntityManagerFactory authDbEntityManagerFactory) {
+        return new JpaTransactionManager(authDbEntityManagerFactory);
+    }
+
 }

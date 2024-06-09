@@ -22,11 +22,6 @@
 			<version>6.1.6</version><!--$NO-MVN-MAN-VER$-->
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.session</groupId>
-			<artifactId>spring-session-jdbc</artifactId>
-			<version>3.3.0</version>
-		</dependency>
-		<dependency>
 			<groupId>org.hibernate.orm</groupId>
 			<artifactId>hibernate-core</artifactId>
 			<version>6.5.1.Final</version>
@@ -48,6 +43,11 @@
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<version>8.0.33</version><!--$NO-MVN-MAN-VER$-->
+		</dependency>
+		<dependency>
+			<groupId>common</groupId>
+			<artifactId>com.common</artifactId>
+			<version>0.1</version>
 		</dependency>
 	</dependencies>
 	<build>
