@@ -17,7 +17,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import UAMApi from '../httputil/uam';
 import constants from '../common/constants';
 import { useDispatch } from 'react-redux';
-import { loginSuccess } from '../actions/authActions';
+import {  saveUserName } from '../actions/authActions';
 const theme = createTheme();
 
 function Copyright(props) {
@@ -57,6 +57,7 @@ function PreLogin() {
       //setIsForLogin(true);
       setisforRegister(false);
       setisforForgotpwd(false);
+      navigate('/')
 
   }, []);   
   const handleRegisterSubmit = (event) => {
@@ -82,8 +83,11 @@ function PreLogin() {
       console.log(response)
       if(response.data.user)
       {
-        dispatch(loginSuccess(response.data.user.name));
-        navigate(constants.homeURL);
+        dispatch(saveUserName(response.data.user.name));
+        console.log('Dispatched saveUserName:', response.data.user.name);
+        console.log(constants.homeURL);
+        window.location.href = '/home';
+        //navigate(constants.homeURL);
       }
 
     }, (error) => {

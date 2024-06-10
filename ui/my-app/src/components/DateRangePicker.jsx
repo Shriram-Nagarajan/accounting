@@ -1,5 +1,6 @@
+//date picker component
 import React from 'react';
-import { Box,TextField } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -20,7 +21,7 @@ function DateRangePickerComponent(props) {
                     renderInput={(params) => (
                         <TextField
                             {...params}
-                            sx={{width: '100%'}}
+                            sx={{ width: '100%' }}
                             error={props.error}
                             helperText={props.helperText}
                         />

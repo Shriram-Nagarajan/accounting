@@ -1,3 +1,4 @@
+///appbar,drawer component
 import React, { useState } from "react";
 import CssBaseline from '@mui/material/CssBaseline';
 import Divider from '@mui/material/Divider';
@@ -14,22 +15,24 @@ import { Container, Paper, Typography, Grid, Button, Box, AppBar, Toolbar, Snack
 
 
 const drawerWidth = 240;
-const navItems = ['Home', 'Input data', 'Expense Insights'];
+const navItems = ['Home', 'File Upload', 'Expense Insights'];
 
 export default function DrawerAppBar(props) {
   const { window } = props;
   const [mobileOpen, setMobileOpen] = React.useState(false);
   const [selectedNavItem, setSelectedNavItem] = useState(navItems[0]); // Default to 'Home' as selected
 
+
+  //to close and open drawer
   const handleDrawerToggle = () => {
     setMobileOpen((prevState) => !prevState);
   };
-
+  //click function for nav item from the drawer
   const handleNavItemClick = (item) => {
     setSelectedNavItem(item);
     handleDrawerToggle(); // Close the drawer on mobile when an item is clicked
   };
-
+//configuration for the drawer
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
       <Typography variant="h6" sx={{ my: 2 }}>

@@ -1,5 +1,5 @@
-// import '../css/table.css';
-import Table from '@mui/material/Table';
+//Table component for expense insights
+import { Table } from '@mui/material';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
 import TableContainer from '@mui/material/TableContainer';
@@ -10,54 +10,40 @@ import { styled } from '@mui/material/styles';
 
 
 function CategoryWiseExpensesTable(props) {
-    
+  //styling for table cells
+  const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: 'rgb(25, 118, 210)',//theme.palette.common.black,
+      color: theme.palette.common.white,
+    },
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 14,
+    },
+  }));
+  //styling for table rows
+  const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.action.hover,
+    },
+    // hide last border
+    '&:last-child td, &:last-child th': {
+      border: 0,
+    },
+  }));
+  //calculation for total expenditure to be shown in table last row
+  let sumTotalExpenditure = props.expenses.map(exp => exp.totalExpenditure).reduce((acc, val) => {
+    return acc + val;
+  }, 0);
 
-
-    const StyledTableCell = styled(TableCell)(({ theme }) => ({
-      [`&.${tableCellClasses.head}`]: {
-        backgroundColor: 'rgb(25, 118, 210)',//theme.palette.common.black,
-        color: theme.palette.common.white,
-      },
-      [`&.${tableCellClasses.body}`]: {
-        fontSize: 14,
-      },
-    }));
-    
-    const StyledTableRow = styled(TableRow)(({ theme }) => ({
-      '&:nth-of-type(odd)': {
-        backgroundColor: theme.palette.action.hover,
-      },
-      // hide last border
-      '&:last-child td, &:last-child th': {
-        border: 0,
-      },
-    }));
-    // const handleSubmit = (event) => {
-    //     event.preventDefault();
-    //     let data = {fromDate: props.fromDate, toDate: props.toDate};
-    //     accountingApi.getCategoryWiseExpenses(data, (response) => {
-    //         setExpenses(response.data);
-    //     }, (error) => {
-    //         console.error("Error fetching expenses", error);
-    //     });
-    // }
-
-    let sumTotalExpenditure = props.expenses.map(exp => exp.totalExpenditure).reduce((acc, val) => {
-        return acc + val;
-    }, 0);
-    
-    return (
-        <div >
-            
-            <TableContainer component={Paper} >
-        <Table sx={{ minWidth: 500 }} size = "small" aria-label="customizedtable">
+  return (
+    <div >
+      <TableContainer component={Paper} >
+        <Table sx={{ minWidth: 500 }} size="small" aria-label="customizedtable">
           <TableHead>
             <TableRow>
               <StyledTableCell>Category</StyledTableCell>
               <StyledTableCell align="center">Number of expenses</StyledTableCell>
               <StyledTableCell align="right">Amount&nbsp;(in Rs.)</StyledTableCell>
-              {/* <TableCell align="right">Carbs&nbsp;(g)</TableCell>
-              <TableCell align="right">Protein&nbsp;(g)</TableCell> */}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -69,42 +55,20 @@ function CategoryWiseExpensesTable(props) {
                 <StyledTableCell component="th" scope="row">
                   {row.categoryName}
                 </StyledTableCell>
-                {/* <TableCell align="right">{row.number}</TableCell> */}
                 <StyledTableCell align="center">{row.numOfExpenses}</StyledTableCell>
                 <StyledTableCell align="right">{row.totalExpenditure.toFixed(2)}</StyledTableCell>
-                {/* <TableCell align="right">{row.protein}</TableCell> */}
               </StyledTableRow>
-              
+
             ))}
             <StyledTableRow >
-            <StyledTableCell align="center" colSpan={2} sx={{fontWeight : "bold",backgroundColor:'rgb(25, 118, 210)',color:'white'}}>Total expenditure</StyledTableCell>
-            <StyledTableCell align="right" sx={{fontWeight : "bold",backgroundColor:'rgb(25, 118, 210)',color:'white'}}>₹{sumTotalExpenditure}</StyledTableCell>
-          </StyledTableRow>
+              <StyledTableCell align="center" colSpan={2} sx={{ fontWeight: "bold", backgroundColor: 'rgb(25, 118, 210)', color: 'white' }}>Total expenditure</StyledTableCell>
+              <StyledTableCell align="right" sx={{ fontWeight: "bold", backgroundColor: 'rgb(25, 118, 210)', color: 'white' }}>₹{sumTotalExpenditure}</StyledTableCell>
+            </StyledTableRow>
           </TableBody>
         </Table>
       </TableContainer>
-            {/* <table className="data-table">
-                <thead>
-                <tr>
-                    <th>Category</th>
-                    <th>Number of expenses</th>
-                    <th>Amount (in Rupees)</th>
-                </tr>
-                </thead>
-                <tbody>
-                {expenses.sort((e1, e2) => e2.totalExpenditure - e1.totalExpenditure).map(expense => (
-                    <tr key={expense.categoryName}>
-                    <td>{expense.categoryName}</td>
-                    <td>{expense.numOfExpenses}</td>
-                    <td>{expense.totalExpenditure}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table> */}
-            {/* <span>{'Total expenditure: Rs. ' + sumTotalExpenditure}</span> */}
-        </div>
-    );
-
+    </div>
+  );
 }
 
 export default CategoryWiseExpensesTable;

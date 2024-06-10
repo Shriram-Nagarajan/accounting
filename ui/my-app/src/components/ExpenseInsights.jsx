@@ -10,6 +10,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
 import dayjs from 'dayjs';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import CircularProgress from '@mui/material/CircularProgress';
+import MoneyAnimation from "./MoneyAnimation";
 // import { makeStyles } from '@mui/styles';
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 // const useStyles = makeStyles((theme) => ({
@@ -124,6 +125,7 @@ function ExpenseInsights()
         <Typography variant="h4" gutterBottom>
           Expense Insights
         </Typography>
+        <MoneyAnimation />
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={4}>

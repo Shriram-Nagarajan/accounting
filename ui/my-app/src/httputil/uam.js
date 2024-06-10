@@ -8,9 +8,12 @@ const loginUser = (formData, onSuccess, onError) => {
     http.post(getDomainUrl() + "login", formData, onSuccess, onError);
 }
 
-
+const getSession = (parameters, onSuccess, onError) => {
+    http.get(getDomainUrl() + "get-session", parameters, onSuccess, onError);
+}
 const UAMApi = {
-    loginUser
+    loginUser,
+    getSession,
    
 }
 

@@ -47,6 +47,9 @@ function Footer({ drawerOpen }) {
                             <Link href="/expense-insights" color="inherit" variant="body2" underline="none">
                                 Expense Insights
                             </Link>
+                            <Link href="/income-insights" color="inherit" variant="body2" underline="none">
+                                Income Insights
+                            </Link>
                         </Grid>
                         <Grid item xs={12} sm={4}>
                             <Typography variant="h6" gutterBottom>

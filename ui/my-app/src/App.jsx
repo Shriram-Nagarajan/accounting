@@ -1,18 +1,55 @@
 import React, { useState ,useEffect} from 'react';
 import PostLogin from './components/PostLogin';
 import PreLogin from './components/PreLogin';
-import { useSelector } from 'react-redux';
+import UAMApi from './httputil/uam';
 
 function App() {
-    const isLoggedIn = useSelector((state) => state.auth.isLoggedIn)
-    //const [isLoggedIn,setIsLoggedIn] = useState(false);
-    // useEffect(() => {
-    //     // Simulate a login for testing purposes
-    //     setIsLoggedIn(false);
-    // }, []);    
+
+    // function getRoute()
+    // {
+    //     const currentLocation = window.location.pathname;
+    //     if(currentLocation === '/' || currentLocation === '/home')
+    //         {
+    //             setStartPage('/home');
+    //         }
+    //     else
+    //     {
+    //         setStartPage(currentLocation);
+    //     }
+
+    // }
+    // let isLoggedIn = useSelector((state) => state.auth.isLoggedIn)
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isGetSessionDone,setIsGetSessionDone] = useState(false);
+    useEffect(() => {
+        UAMApi.getSession(
+            '',
+            (response) => {
+                setIsGetSessionDone(true);
+                console.log("getSession", response);
+                if(response.data && response.data.loginId != "")
+                    {
+                        setIsLoggedIn(true);
+                    }
+                else
+                {
+                    setIsLoggedIn(false);
+                }
+            },
+            (error) => {
+                console.error("Error fetching session", error);
+                setIsGetSessionDone(true);
+                setIsLoggedIn(false);
+
+            }
+        );
+    }, []);
 
     return (
-        isLoggedIn ? <PostLogin startPage ="/home"/> : <PreLogin />
+        isGetSessionDone ? (
+            isLoggedIn ? <PostLogin startPage="/home" /> : <PreLogin />
+        ) : <></>
+        // startPage ={startPage}
     );
 }
 

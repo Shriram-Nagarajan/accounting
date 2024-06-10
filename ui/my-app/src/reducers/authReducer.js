@@ -1,21 +1,26 @@
 const initialState = {
-    isLoggedIn: false,
-    userName:""
+    // isLoggedIn: false,
+    userName:"",
 };
 
 const authReducer = (state = initialState, action) => {
     switch (action.type) {
-        case 'Login_success':
+        // case 'Login_success':
+        //     return {
+        //         ...state,
+        //         isLoggedIn: true,
+        //         userName:action.payload.userName,
+        //     };
+        // case 'Logout':
+        //     return {
+        //         ...state,
+        //         isLoggedIn: false,
+        //     };
+        case 'save_username':
             return {
                 ...state,
-                isLoggedIn: true,
                 userName:action.payload.userName,
-            };
-        case 'Logout':
-            return {
-                ...state,
-                isLoggedIn: false,
-            };
+            }
         default:
             return state;
 

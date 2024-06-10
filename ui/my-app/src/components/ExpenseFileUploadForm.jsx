@@ -8,11 +8,24 @@ import ModalPopup from './Modal';
 import Badge from '@mui/material/Badge';
 import FormHelperText from '@mui/material/FormHelperText';
 import DateRangePickerComponent from './DateRangePicker';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+
 function ExpenseFileUploadForm() {
   const [open, setOpen] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [formData, setFormData] = useState({
+  const [tabValue, setTabValue] = useState(0);
+
+  const [ExpenseFormData, setExpenseFormData] = useState({
+    date: new Date(),
+    category: '',
+    description: '',
+    creditTxn: false,
+    reversalTxn: false,
+    amount: '',
+  });
+  const [IncomeFormData, setIncomeFormData] = useState({
     date: new Date(),
     category: '',
     description: '',
@@ -98,15 +111,22 @@ function ExpenseFileUploadForm() {
       console.log('No file selected');
     }
   };
-  const handleInputChange = (e) => {
+  const handleExpenseInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setExpenseFormData({ ...ExpenseFormData, [name]: value });
+  };
+  const handleIncomeInputChange = (e) => {
+    const { name, value } = e.target;
+    setIncomeFormData({ ...IncomeFormData, [name]: value });
   };
 
+  const handleTabChange = (event, newValue) => {
+    setTabValue(newValue);
+  };
   const handleCategoryChange = (event) => {
     setSelectedCategory(event.target.value);
     const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
+    setExpenseFormData({ ...ExpenseFormData, [name]: value });
 
   };
 
@@ -127,13 +147,13 @@ function ExpenseFileUploadForm() {
   };
 
   const handleAddClick = () => {
-    validateForm(formData);
-    const isEmpty = Object.values(formData).some(value =>
+    validateForm(ExpenseFormData);
+    const isEmpty = Object.values(ExpenseFormData).some(value =>
       (typeof value === 'string' && value.trim() === '') ||
       value === null ||
       value === undefined
     );
-    const errors = validateForm(formData);
+    const errors = validateForm(ExpenseFormData);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
     }
@@ -141,8 +161,8 @@ function ExpenseFileUploadForm() {
       showAlert("Date,Description,Amount,Category are mandatory. Please fill out.", "error")
     }
     else {
-      setExpenseFromUser([...expenseFromUser, formData]);
-      setFormData({
+      setExpenseFromUser([...expenseFromUser, ExpenseFormData]);
+      setExpenseFormData({
         date: new Date(),
         category: '',
         description: '',
@@ -164,7 +184,7 @@ function ExpenseFileUploadForm() {
   const handleSaveAPISuccess = () => {
     handleClose();
     setExpenseFromUser([]);
-    setFormData({
+    setExpenseFormData({
       date: new Date(),
       category: '',
       description: '',
@@ -206,42 +226,6 @@ function ExpenseFileUploadForm() {
   };
 
   return (
-    // <Container>
-    //   <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
-    //     <Typography variant="h4" gutterBottom>
-    //     Input data
-    //     </Typography>
-    //     <Box
-    //   sx={{
-    //     display: 'flex',
-    //     //justifyContent: 'center',
-    //     //alignItems: 'center',
-    //     //height: '100vh',
-    //   }}
-    // >
-    //   <Button
-    //     variant="contained"
-    //     color="primary"
-    //     startIcon={<DownloadIcon />}
-    //     onClick={handleDownload}
-    //   >
-    //     Download Template
-    //   </Button>
-    // </Box>
-    //   <form onSubmit={handleSubmit}>
-    //      <input type="file" onChange={handleFileChange} />
-    //     <button type="submit">Upload</button>
-
-    //     <span>{uploadStatus}</span>
-    //   </form>
-    //   </Paper>
-    //   <Snackbar open={alertOpen} autoHideDuration={6000} onClose={() => setAlertOpen(false)}>
-    //     <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: '100%' }}>
-    //       {alertMessage}
-    //     </Alert>
-    //   </Snackbar>
-
-    // </Container>
     <Container>
       <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
         <Box
@@ -332,24 +316,31 @@ function ExpenseFileUploadForm() {
               </Box>
             </Grid>
             <Grid item xs={12} md={5}>
-              <Box
-                component="form"
-                sx={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2,
-                }}
-              // onSubmit={handleFormSubmit}
-              >
-                <Typography variant="h6">Form Details</Typography>
-
-                {/* <TextField
+            <Box sx={{ mb: 2 }}>
+              <Tabs value={tabValue} onChange={handleTabChange} textColor="secondary"
+        indicatorColor="secondary">
+                <Tab label="Expense" />
+                <Tab label="Income" />
+              </Tabs>
+              {tabValue === 0 && (
+                // Expense form content
+                <Box
+                  component="form"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                    mt: 2, // Add margin-top to create space between tabs line and form
+                  }}
+                >
+                  {/* Expense form fields */}
+                  {/* <TextField
                   label="Date"
                   variant="outlined"
                   type="date" // Set type to 'date' for date input
                   name = "date"
-                  value={formData.date}
-                  onChange={handleInputChange}
+                  value={ExpenseFormData.date}
+                  onChange={handleExpenseInputChange}
                   fullWidth
                   InputLabelProps={{
                     shrink: true, // To shrink the label when a date is selected
@@ -361,8 +352,8 @@ function ExpenseFileUploadForm() {
                 
                 <DateRangePickerComponent xs={12} md={6}
                   label="Date"
-                  value={formData.date}
-                  onChange={handleInputChange}
+                  value={ExpenseFormData.date}
+                  onChange={handleExpenseInputChange}
                   fullWidth
                   error={!!formErrors.date}
                   helperText={formErrors.date}
@@ -373,8 +364,8 @@ function ExpenseFileUploadForm() {
                   label="Description"
                   variant="outlined"
                   name="description"
-                  value={formData.description}
-                  onChange={handleInputChange}
+                  value={ExpenseFormData.description}
+                  onChange={handleExpenseInputChange}
                   multiline
                   rows={4}
                   fullWidth
@@ -386,8 +377,8 @@ function ExpenseFileUploadForm() {
                   label="Amount"
                   variant="outlined"
                   name="amount"
-                  value={formData.amount}
-                  onChange={handleInputChange}
+                  value={ExpenseFormData.amount}
+                  onChange={handleExpenseInputChange}
                   fullWidth
                   error={!!formErrors.amount}
                   helperText={formErrors.amount}
@@ -457,16 +448,63 @@ function ExpenseFileUploadForm() {
                         Preview & Save
                       </Button>
                     </Badge>
-
                   </Grid>
-                  {/* <Grid item xs={12} md={5}>
-                    <Button variant="contained" color="success" type="submit" fullWidth onClick = {handleSaveAllClick}>
-                      Save All
-                    </Button>
-                  </Grid> */}
-                </Grid>
+                  </Grid>
+                </Box>
+              )}
+              {tabValue === 1 && (
+                // Income form content
+                <Box
+                  component="form"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                    mt: 2, // Add margin-top to create space between tabs line and form
+
+                  }}
+                >
+
+                  {/* Income form fields */}
+                  <DateRangePickerComponent xs={12} md={6}
+                  label="Date"
+                  value={IncomeFormData.date}
+                  onChange={handleIncomeInputChange}
+                  fullWidth
+                  error={!!formErrors.date}
+                  helperText={formErrors.date}
+                  
+                />
+
+                <TextField
+                  label="Description"
+                  variant="outlined"
+                  name="description"
+                  value={IncomeFormData.description}
+                  onChange={handleIncomeInputChange}
+                  multiline
+                  rows={4}
+                  fullWidth
+                  error={!!formErrors.description}
+                  helperText={formErrors.description}
+                // required
+                />
+                <TextField
+                  label="Amount"
+                  variant="outlined"
+                  name="amount"
+                  value={IncomeFormData.amount}
+                  onChange={handleIncomeInputChange}
+                  fullWidth
+                  error={!!formErrors.amount}
+                  helperText={formErrors.amount}
+                // required
+                />
+                </Box>
+              )}
               </Box>
             </Grid>
+           
           </Grid>
         </Box>
       </Paper>
@@ -484,3 +522,145 @@ function ExpenseFileUploadForm() {
 }
 
 export default ExpenseFileUploadForm;
+
+
+// //  <Grid item xs={12} md={5}>
+// <Tabs value={tabValue} onChange={handleTabChange}>
+// <Tab label="Expense" />
+// <Tab label="Income" />
+// </Tabs>
+//     <Box
+//       component="form"
+//       sx={{
+//         display: 'flex',
+//         flexDirection: 'column',
+//         gap: 2,
+//       }}
+//     // onSubmit={handleFormSubmit}
+//     >
+//       <Typography variant="h6">Form Details</Typography>
+
+//       {/* <TextField
+//         label="Date"
+//         variant="outlined"
+//         type="date" // Set type to 'date' for date input
+//         name = "date"
+//         value={ExpenseFormData.date}
+//         onChange={handleExpenseInputChange}
+//         fullWidth
+//         InputLabelProps={{
+//           shrink: true, // To shrink the label when a date is selected
+//         }}
+//         error={!!formErrors.date}
+//         helperText={formErrors.date}
+//         // required
+//       /> */}
+      
+//       <DateRangePickerComponent xs={12} md={6}
+//         label="Date"
+//         value={ExpenseFormData.date}
+//         onChange={handleExpenseInputChange}
+//         fullWidth
+//         error={!!formErrors.date}
+//         helperText={formErrors.date}
+        
+//       />
+
+//       <TextField
+//         label="Description"
+//         variant="outlined"
+//         name="description"
+//         value={ExpenseFormData.description}
+//         onChange={handleExpenseInputChange}
+//         multiline
+//         rows={4}
+//         fullWidth
+//         error={!!formErrors.description}
+//         helperText={formErrors.description}
+//       // required
+//       />
+//       <TextField
+//         label="Amount"
+//         variant="outlined"
+//         name="amount"
+//         value={ExpenseFormData.amount}
+//         onChange={handleExpenseInputChange}
+//         fullWidth
+//         error={!!formErrors.amount}
+//         helperText={formErrors.amount}
+//       // required
+//       />
+//       {/* Dropdown for existing categories */}
+//       <FormControl fullWidth error={!!formErrors.category}>
+//         <InputLabel id="category-select-label">Category</InputLabel>
+//         <Select
+//           labelId="category-select-label"
+//           label="Catgeory"
+//           name="category"
+//           value={selectedCategory}
+//           onChange={handleCategoryChange}
+//           fullWidth
+//         >
+//           {categories.map((category) => (
+//             <MenuItem key={category} value={category}>
+//               {category}
+//             </MenuItem>
+//           ))}
+//         </Select>
+//         {formErrors.category && <FormHelperText>{formErrors.category}</FormHelperText>}
+//       </FormControl>
+
+//       {/* TextField for new category input */}
+//       <Box mt={2}>
+//         <Grid container>
+//           <Grid item xs={12} md={10}>
+//             <TextField
+//               label="Choose new category"
+//               variant="outlined"
+//               value={newCategory}
+//               onChange={handleNewCategoryChange}
+//               fullWidth
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={1}>
+//             <Button onClick={handleAddCategory} sx={{ mt: '10px' }}><AddCircleRoundedIcon />
+//             </Button>
+
+//           </Grid>
+//         </Grid>
+//       </Box>
+//       {/* Chips for category suggestions */}
+//       <Box mt={2} display="flex" flexWrap="wrap" gap={1}>
+//         {categorySuggestions.map((suggestion) => (
+//           <Chip
+//             key={suggestion}
+//             label={suggestion}
+//             onClick={() => handleChipClick(suggestion)}
+//           />
+//         ))}
+//       </Box>
+
+//       <br />
+//       <Grid container spacing={1} sx={{
+//         alignItems: 'center',
+//         justifyContent: 'center',
+//       }}>
+//         <Grid item xs={12} md={6}>
+//           <Button variant="contained" color="primary" type="button" fullWidth onClick={handleAddClick}>Add Expense</Button>
+//         </Grid>
+//         <Grid item xs={12} md={6}>
+//           <Badge color="primary" badgeContent={count}>
+//             <Button variant="contained" color="secondary" type="button" fullWidth onClick={handlePreviewClick}>
+//               Preview & Save
+//             </Button>
+//           </Badge>
+
+//         </Grid>
+//         {/* <Grid item xs={12} md={5}>
+//           <Button variant="contained" color="success" type="submit" fullWidth onClick = {handleSaveAllClick}>
+//             Save All
+//           </Button>
+//         </Grid> */}
+//       </Grid>
+//     </Box>
+//   </Grid>

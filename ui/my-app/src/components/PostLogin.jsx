@@ -12,6 +12,7 @@ import useMediaQuery from '@mui/material/useMediaQuery';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import InputRoundedIcon from '@mui/icons-material/InputRounded';
 import InsightsRoundedIcon from '@mui/icons-material/InsightsRounded';
+import MoneyRoundedIcon from '@mui/icons-material/MoneyRounded';
 import Footer from './Footer';
 import UserAvatar from '../components/Avatar';
 import UserDropdown from '../components/DropdownforUserAvatar';
@@ -19,30 +20,33 @@ import { logout } from '../actions/authActions';
 import constants from '../common/constants';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
+import Income from './Income';
 
 const drawerWidth = 240;
 
 function PostLogin(props) {
-    const userName = useSelector(state => state.auth.userName); // assuming you store user info in Redux state
+    const userName = useSelector(state => 
+        {
+        console.log(state);
+        console.log(state.auth);
+        console.log(state.auth.userName); 
+        
+        })// assuming you store user info in Redux state
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    useEffect(() => {
-        const currentPath = window.location.pathname;
-        console.log(currentPath);
-        console.log(props.startPage);
-        if (props.startPage && currentPath !== props.startPage) {
-            navigate(props.startPage);
-        }
-        // if (props.startPage && currentPath === "/") {
-        //     navigate(props.startPage);
-        // }
-        
-    }, []);
     // useEffect(() => {
-    //     if (props.startPage) {
+    //     const currentPath = window.location.pathname;
+    //     console.log(currentPath);
+    //     console.log(props.startPage);
+    //     if (props.startPage && currentPath !== props.startPage) {
     //         navigate(props.startPage);
     //     }
-    // }, [navigate, props.startPage]);
+    //     // if (props.startPage && currentPath === "/") {
+    //     //     navigate(props.startPage);
+    //     // }
+        
+    // }, []);
+    
     const [mobileOpen, setMobileOpen] = React.useState(false);
     const [drawerOpen, setDrawerOpen] = React.useState(true);
     const theme = useTheme();
@@ -60,7 +64,7 @@ function PostLogin(props) {
         setDrawerOpen(false);
     };
     const handleLogout = () => {
-        dispatch(logout()); // dispatch the logout action
+        //dispatch(logout()); // dispatch the logout action
         // You may want to redirect the user to the login page after logout
         navigate(constants.loginURL);
       };
@@ -72,6 +76,9 @@ function PostLogin(props) {
                        <WestRoundedIcon />
                     </IconButton>
                 )}
+                <Typography variant="h6" sx={{ my: 2 }}>
+        FinancialFreedom
+      </Typography>
             </Toolbar>
             <Divider />
             
@@ -84,6 +91,9 @@ function PostLogin(props) {
                 </ListItemButton>
                 <ListItemButton component={Link} to="/expense-insights">
                     <InsightsRoundedIcon color="action" fontSize="large"/>&nbsp;<ListItemText primary="Expense Insights" />
+                </ListItemButton>
+                <ListItemButton component={Link} to="/income-insights">
+                    <MoneyRoundedIcon color="action" fontSize="large"/>&nbsp;<ListItemText primary="Income Insights" />
                 </ListItemButton>
             </List>
         </div>
@@ -106,15 +116,16 @@ function PostLogin(props) {
                             <MenuIcon />
                         </IconButton>
                         <Typography variant="h6" noWrap component="div" sx={{marginLeft: '30px',marginTop: '-36px'}}>
-                            MyApp
+                            Financial Freedom
                         </Typography>
                         </div>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
             {/* <Box sx={{ ml: 130 }}>
               <UserAvatar userName={userName} />
             </Box> */}
-            <Box sx={{ ml: 130 }}>
+            <Box sx={{ ml: 115 }}>
             <UserDropdown userName={userName} onLogout={handleLogout} />
+            {/* userName={userName} */}
             </Box>
           </Box>
                     </Toolbar>
@@ -161,6 +172,7 @@ function PostLogin(props) {
                             <Route path="/home" element={<Home />} />
                             <Route path="/file-upload" element={<FileUpload />} />
                             <Route path="/expense-insights" element={<ExpenseInsights />} />
+                            <Route path="/income-insights" element={<Income />} />
                         </Routes>
                     </Container>
                 </Box>
