@@ -39,6 +39,7 @@ public class UserSessionHandler {
 		cookie.setMaxAge(3600);
 		cookie.setHttpOnly(true);
 		cookie.setPath("/");
+		cookie.setAttribute("SameSite", "None");
 		response.addCookie(cookie);
 	}
 	

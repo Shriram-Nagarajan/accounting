@@ -42,7 +42,7 @@ public class EntityManagerConfig {
     }
     
     @Bean
-    public PlatformTransactionManager authDbTransactionManager(EntityManagerFactory authDbEntityManagerFactory) {
+    public PlatformTransactionManager authDbTransactionManager(@Qualifier("authDbEntityManagerFactory") EntityManagerFactory authDbEntityManagerFactory) {
         return new JpaTransactionManager(authDbEntityManagerFactory);
     }
 
