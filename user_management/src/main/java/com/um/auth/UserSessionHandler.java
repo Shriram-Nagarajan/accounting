@@ -35,11 +35,11 @@ public class UserSessionHandler {
 		String sessionId = createSessionId(user);
 		sessionCache.store(sessionId, user, 3600);
 		Cookie cookie = new Cookie("sessionToken", sessionId);
-		cookie.setDomain("local.finfree.com");
+		cookie.setDomain("localhost");
 		cookie.setMaxAge(3600);
 		cookie.setHttpOnly(true);
 		cookie.setPath("/");
-		cookie.setAttribute("SameSite", "None");
+//		cookie.setAttribute("SameSite", "None"); 
 		response.addCookie(cookie);
 	}
 	

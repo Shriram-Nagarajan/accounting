@@ -1,6 +1,6 @@
 const constants = {
     accountingDomain : "192.168.29.126:8081",
-    UAMDomain : "local.finfree.com:8080",
+    UAMDomain : "localhost:8080",
     scheme : "http",
     homeURL : "localhost:3000/home",
     loginURL:"localhost:3000",
