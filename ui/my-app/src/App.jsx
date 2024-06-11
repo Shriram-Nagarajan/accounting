@@ -18,7 +18,7 @@ function App() {
                 console.log("getSession", response);
                 if(response.data && response.data.loginId != "")
                     {
-                        dispatch(loginSuccess(response.data.loginId))
+                        dispatch(loginSuccess(response.data.name))
                     }
                 else
                 {

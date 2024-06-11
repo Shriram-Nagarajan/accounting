@@ -17,7 +17,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import UAMApi from '../httputil/uam';
 import constants from '../common/constants';
 import { useDispatch } from 'react-redux';
-import {  saveUserName } from '../actions/authActions';
+import {  loginSuccess } from '../actions/authActions';
 const theme = createTheme();
 
 function Copyright(props) {

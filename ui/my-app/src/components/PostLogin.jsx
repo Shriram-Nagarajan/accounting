@@ -30,7 +30,7 @@ function PostLogin(props) {
         console.log(state);
         console.log(state.auth);
         console.log(state.auth.userName); 
-        
+        return state.auth.userName;
         })// assuming you store user info in Redux state
     const navigate = useNavigate();
     const dispatch = useDispatch();
