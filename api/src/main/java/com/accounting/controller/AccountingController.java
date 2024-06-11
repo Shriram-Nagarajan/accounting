@@ -20,8 +20,6 @@ import com.accounting.model.ExpenseDetails;
 import com.accounting.model.SaveExpensesRequest;
 import com.accounting.util.DateUtil;
 
-import jakarta.servlet.http.HttpSession;
-
 @RestController
 public class AccountingController {
 
@@ -70,29 +68,6 @@ public class AccountingController {
 		log.info("Responding to saveExpenses request - reqId: "+ reqId +" with status: " + status);
 		return ResponseEntity.ok(status);
 	}
-	
-    @GetMapping("/session-test")
-    public String session(HttpSession session) {
-        Integer count = (Integer) session.getAttribute("count");
-        if (count == null) {
-            count = 0;
-        }
-        count++;
-        session.setAttribute("count", count);
-        return "Session count: " + count;
-    }
-    
-    @GetMapping("/remove-session")
-    public String removeSession(HttpSession session) {
-        Integer count = (Integer) session.getAttribute("count");
-        if (count == null) {
-            count = 0;
-        }	else {
-        	session.removeAttribute("count");
-        }
-        return "Session count: " + count;
-    }
-	
 
 	private void validateDate(String fromDateStr, String toDateStr) throws ParseException {
 		

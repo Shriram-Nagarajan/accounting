@@ -37,6 +37,7 @@ DROP table if exists accounts.`categories`;
 CREATE TABLE IF NOT EXISTS accounts.`categories` (
   `category_id` int NOT NULL AUTO_INCREMENT,
   `category_name` varchar(100) unique NOT NULL,
+  `is_default` bool default FALSE,
   PRIMARY KEY (`category_id`),
   KEY `idx_category_name` (`category_name`)
 ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

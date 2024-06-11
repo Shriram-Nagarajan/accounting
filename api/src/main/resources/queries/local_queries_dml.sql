@@ -1,11 +1,11 @@
-INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Service');
-INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Medical');
-INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('EMI');
-INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Food order');
-INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Grocery');
-INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Misc');
-INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Utility bills');
-INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Deposits');
-INSERT INTO `accounts`.`categories` (`category_name`) VALUES ('Travel');
+INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Service',true);
+INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Medical',true);
+INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('EMI',true);
+INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Food order',true);
+INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Grocery',true);
+INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Misc',true);
+INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Utility bills',true);
+INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Deposits',true);
+INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Travel',true);
 
 INSERT INTO `accounts`.`account_details` (`account_number`, `name`) VALUES ('4895', 'test');

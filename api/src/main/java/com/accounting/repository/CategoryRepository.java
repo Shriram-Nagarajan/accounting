@@ -12,4 +12,6 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
 	List<Category> findByCategoryName(String categoryName);
 	
+	List<Category> findByIsDefaultCategory(boolean isDefault);
+	
 }

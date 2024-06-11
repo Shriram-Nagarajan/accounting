@@ -19,6 +19,9 @@ public class Category {
 	@Column(name = "category_name")
 	private String categoryName;
 	
+	@Column(name = "is_default")
+	private boolean isDefaultCategory;
+
 	public Category() {
 	}
 
@@ -40,6 +43,14 @@ public class Category {
 
 	public void setCategoryName(String categoryName) {
 		this.categoryName = categoryName;
+	}
+	
+	public boolean isDefaultCategory() {
+		return isDefaultCategory;
+	}
+	
+	public void setDefaultCategory(boolean isDefaultCategory) {
+		this.isDefaultCategory = isDefaultCategory;
 	}
 	
 }
