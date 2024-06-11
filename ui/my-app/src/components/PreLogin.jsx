@@ -57,8 +57,7 @@ function PreLogin() {
       //setIsForLogin(true);
       setisforRegister(false);
       setisforForgotpwd(false);
-      navigate('/')
-
+      navigate("/");
   }, []);   
   const handleRegisterSubmit = (event) => {
     event.preventDefault();
@@ -83,11 +82,8 @@ function PreLogin() {
       console.log(response)
       if(response.data.user)
       {
-        dispatch(saveUserName(response.data.user.name));
-        console.log('Dispatched saveUserName:', response.data.user.name);
-        console.log(constants.homeURL);
-        window.location.href = '/home';
-        //navigate(constants.homeURL);
+        dispatch(loginSuccess(response.data.user.name));
+        navigate("/home");
       }
 
     }, (error) => {

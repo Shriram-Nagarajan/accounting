@@ -1,55 +1,44 @@
 import React, { useState ,useEffect} from 'react';
 import PostLogin from './components/PostLogin';
 import PreLogin from './components/PreLogin';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { loginSuccess, logout } from './actions/authActions';
 import UAMApi from './httputil/uam';
 
 function App() {
-
-    // function getRoute()
-    // {
-    //     const currentLocation = window.location.pathname;
-    //     if(currentLocation === '/' || currentLocation === '/home')
-    //         {
-    //             setStartPage('/home');
-    //         }
-    //     else
-    //     {
-    //         setStartPage(currentLocation);
-    //     }
-
-    // }
-    // let isLoggedIn = useSelector((state) => state.auth.isLoggedIn)
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isGetSessionDone,setIsGetSessionDone] = useState(false);
+    const dispatch = useDispatch();
+    const isLoggedIn = useSelector((state) => state.auth.isLoggedIn)
+    //const [isLoggedIn,setIsLoggedIn] = useState(false);
     useEffect(() => {
         UAMApi.getSession(
             '',
             (response) => {
-                setIsGetSessionDone(true);
+                // setIsGetSessionDone(true);
                 console.log("getSession", response);
                 if(response.data && response.data.loginId != "")
                     {
-                        setIsLoggedIn(true);
+                        dispatch(loginSuccess(response.data.loginId))
                     }
                 else
                 {
-                    setIsLoggedIn(false);
+                    // setIsLoggedIn(false);
+                    dispatch(logout());
                 }
             },
             (error) => {
                 console.error("Error fetching session", error);
-                setIsGetSessionDone(true);
-                setIsLoggedIn(false);
+                // setIsGetSessionDone(true);
+                // setIsLoggedIn(false);
+
+                dispatch(logout());
 
             }
         );
-    }, []);
+    }, []); 
 
     return (
-        isGetSessionDone ? (
-            isLoggedIn ? <PostLogin startPage="/home" /> : <PreLogin />
-        ) : <></>
-        // startPage ={startPage}
+        isLoggedIn ? <PostLogin startPage ="/home"/> : <PreLogin />
     );
 }
 
