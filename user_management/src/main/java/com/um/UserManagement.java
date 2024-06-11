@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -45,22 +46,22 @@ public class UserManagement {
 	}
   
     @Bean("userDataSource")
-    DataSource userDataSource() {
+    DataSource userDataSource(Environment env) {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/userdb");
-        dataSource.setUsername("root");
-        dataSource.setPassword("root");
+        dataSource.setDriverClassName(env.getProperty("spring.datasource.driver-class-name"));
+        dataSource.setUrl(env.getProperty("spring.datasource.url"));
+        dataSource.setUsername(env.getProperty("spring.datasource.username"));
+        dataSource.setPassword(env.getProperty("spring.datasource.password"));
         return dataSource;
 	}
     
     @Bean("authDataSource")
-    DataSource authDataSource() {
+    DataSource authDataSource(Environment env) {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/authdb");
-        dataSource.setUsername("root");
-        dataSource.setPassword("root");
+        dataSource.setDriverClassName(env.getProperty("spring.datasource.driver-class-name"));
+        dataSource.setUrl(env.getProperty("authDatasource.url"));
+        dataSource.setUsername(env.getProperty("authDatasource.username"));
+        dataSource.setPassword(env.getProperty("authDatasource.password"));
         return dataSource;
 	}
     
@@ -71,12 +72,16 @@ public class UserManagement {
     }
     
 	@Bean
-	public WebMvcConfigurer corsConfigurer() {
+	public WebMvcConfigurer corsConfigurer(Environment env) {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
+				
+				String allowedOriginCsv = env.getProperty("cors.allowed.origins");
+				String allowedOrigins[] = allowedOriginCsv.split(",");
+				
 				registry.addMapping("/**")
-					.allowedOrigins("http://localhost:3000", "http://local.finfree.com:3000")
+					.allowedOrigins(allowedOrigins)
 					.allowedMethods("GET", "POST", "PUT", "DELETE")
 					.allowedHeaders("*")
 					.allowCredentials(true)
@@ -84,12 +89,5 @@ public class UserManagement {
 			}
 		};
 	}
-	
-	/*
-	 * @Bean("accountsSessionFactory") SessionFactory accountsSessionFactory() {
-	 * SessionFactory sessionFactory = new Configuration()
-	 * .configure("hibernate.cfg.xml") .buildSessionFactory(); return
-	 * sessionFactory; }
-	 */
     
 }
