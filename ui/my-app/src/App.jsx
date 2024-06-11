@@ -2,14 +2,40 @@ import React, { useState ,useEffect} from 'react';
 import PostLogin from './components/PostLogin';
 import PreLogin from './components/PreLogin';
 import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { loginSuccess, logout } from './actions/authActions';
+import UAMApi from './httputil/uam';
 
 function App() {
+    const dispatch = useDispatch();
     const isLoggedIn = useSelector((state) => state.auth.isLoggedIn)
     //const [isLoggedIn,setIsLoggedIn] = useState(false);
-    // useEffect(() => {
-    //     // Simulate a login for testing purposes
-    //     setIsLoggedIn(false);
-    // }, []);    
+    useEffect(() => {
+        UAMApi.getSession(
+            '',
+            (response) => {
+                // setIsGetSessionDone(true);
+                console.log("getSession", response);
+                if(response.data && response.data.loginId != "")
+                    {
+                        dispatch(loginSuccess(response.data.loginId))
+                    }
+                else
+                {
+                    // setIsLoggedIn(false);
+                    dispatch(logout());
+                }
+            },
+            (error) => {
+                console.error("Error fetching session", error);
+                // setIsGetSessionDone(true);
+                // setIsLoggedIn(false);
+
+                dispatch(logout());
+
+            }
+        );
+    }, []); 
 
     return (
         isLoggedIn ? <PostLogin startPage ="/home"/> : <PreLogin />

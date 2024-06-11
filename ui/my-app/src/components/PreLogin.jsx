@@ -57,7 +57,7 @@ function PreLogin() {
       //setIsForLogin(true);
       setisforRegister(false);
       setisforForgotpwd(false);
-
+      navigate("/");
   }, []);   
   const handleRegisterSubmit = (event) => {
     event.preventDefault();
@@ -83,7 +83,7 @@ function PreLogin() {
       if(response.data.user)
       {
         dispatch(loginSuccess(response.data.user.name));
-        navigate(constants.homeURL);
+        navigate("/home");
       }
 
     }, (error) => {
