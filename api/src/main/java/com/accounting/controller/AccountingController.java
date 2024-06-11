@@ -18,6 +18,8 @@ import com.accounting.handler.TransactionsHandler;
 import com.accounting.model.CategoryWiseExpense;
 import com.accounting.model.ExpenseDetails;
 import com.accounting.model.SaveExpensesRequest;
+import com.accounting.model.SaveIncomeDetails;
+import com.accounting.model.TransactionRecord;
 import com.accounting.util.DateUtil;
 
 @RestController
@@ -52,6 +54,14 @@ public class AccountingController {
 				fromDate, toDate));
 	}
 	
+	@GetMapping("/income-details")
+	public ResponseEntity<List<TransactionRecord>> getIncomeDetails(
+			@RequestParam(value = "fromDate", required = false) String fromDate,
+			@RequestParam(value = "toDate", required = false) String toDate) throws ParseException {
+		validateDate(fromDate, toDate);
+		return ResponseEntity.ok(transactionsHandler.getIncomeDetails(DEFAULT_ACCOUNT_ID, fromDate, toDate));
+	}
+	
 	
 	@PostMapping("/save-expenses")
 	public ResponseEntity<String> saveExpenses(@RequestBody SaveExpensesRequest saveExpensesRequest) {
@@ -66,6 +76,18 @@ public class AccountingController {
 				ExpenseDetails.getTransactionRecords(saveExpensesRequest.getExpenseList()),
 				saveExpensesRequest.getDeleteExisting());
 		log.info("Responding to saveExpenses request - reqId: "+ reqId +" with status: " + status);
+		return ResponseEntity.ok(status);
+	}
+	
+	@PostMapping("/save-income-details")
+	public ResponseEntity<String> saveIncomeDetails(@RequestBody SaveIncomeDetails saveIncomeDetails) {
+		String reqId = UUID.randomUUID().toString();
+		log.info("Request received saveIncomeDetails- reqId: " + reqId);
+
+		String status = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID,
+				saveIncomeDetails.getIncomeDetails(),
+				saveIncomeDetails.isDeleteExisting());
+		log.info("Responding to saveIncomeDetails request - reqId: "+ reqId +" with status: " + status);
 		return ResponseEntity.ok(status);
 	}
 

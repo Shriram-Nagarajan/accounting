@@ -13,5 +13,7 @@ public interface TransactionsHandler {
 	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate);
 	
 	public List<ExpenseDetails> getExpenses(long accountId, int categoryId, String fromDate, String toDate);
+	
+	public List<TransactionRecord> getIncomeDetails(long accountId, String fromDate, String toDate);
 
 }

@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-@JsonIgnoreProperties(value = {"creditTxn", "reversalTxn"})
+@JsonIgnoreProperties(value = {"reversalTxn"})
 public class TransactionRecord {
 	
 	private long transactionId;

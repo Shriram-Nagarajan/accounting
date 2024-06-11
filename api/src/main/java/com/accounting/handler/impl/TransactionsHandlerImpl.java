@@ -84,5 +84,11 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 		return transactionsDao.getExpenses(accountId, categoryId, fromDate, toDate);
 	}
 
+	@Override
+	public List<TransactionRecord> getIncomeDetails(long accountId, String fromDate, String toDate) {
+		return transactionsDao.getIncomeDetails(accountId, fromDate, toDate);
+	}
+	
 	private static final Logger log = LogManager.getLogger(TransactionsHandlerImpl.class);
+	
 }

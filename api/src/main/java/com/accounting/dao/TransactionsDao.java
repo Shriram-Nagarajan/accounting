@@ -23,4 +23,6 @@ public interface TransactionsDao {
 	
 	public List<ExpenseDetails> getExpenses(long accountId, int categoryId, String fromDate, String toDate);
 	
+	public List<TransactionRecord> getIncomeDetails(long accountId, String fromDate, String toDate);
+	
 }

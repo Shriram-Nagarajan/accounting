@@ -3,7 +3,6 @@ package com.accounting.dao.impl;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -13,6 +12,8 @@ import java.util.stream.IntStream;
 
 import javax.sql.DataSource;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -163,8 +164,7 @@ public class TransactionsDaoImpl implements TransactionsDao {
 											String.valueOf(each.get("transaction_date")).substring(0, 10),
 											env.getProperty("mysql.date.format")));
 						} catch (DateTimeParseException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+							log.error("Exception occurred while parsing transaction date: ", e);
 						}
 						expenseDetails.setDescription(each.get("description") != null && !String.valueOf(each.get("description")).isBlank() ?
 									String.valueOf(each.get("description")) : null);
@@ -177,5 +177,43 @@ public class TransactionsDaoImpl implements TransactionsDao {
 		}
 		return List.of();
 	}
+
+	@Override
+	public List<TransactionRecord> getIncomeDetails(long accountId, String fromDate, String toDate) {
+		
+		String query = env.getProperty("get_income_details");
+		
+		if(query != null && !query.isBlank()) {
+			Map<String, Object> paramMap = new HashMap<String, Object>();
+			paramMap.put("accountId", accountId);
+			paramMap.put("fromDate", fromDate);
+			paramMap.put("toDate", toDate);
+			List<Map<String, Object>> resultList = accountsNamedTemplate.queryForList(query, paramMap);
+			return resultList.stream()
+					.map((each) -> {
+						TransactionRecord incomeDetails = new TransactionRecord();
+						incomeDetails.setTransactionId(Long.parseLong(String.valueOf(each.get("transaction_id"))));
+						try {
+							incomeDetails.setDate(
+									DateUtil.getDate(
+											String.valueOf(each.get("transaction_date")).substring(0, 10),
+											env.getProperty("mysql.date.format")));
+						} catch (DateTimeParseException e) {
+							log.error("Exception occurred while parsing transaction date: ", e);
+						}
+						incomeDetails.setDescription(each.get("description") != null && !String.valueOf(each.get("description")).isBlank() ?
+									String.valueOf(each.get("description")) : null);
+						incomeDetails.setAmount(BigDecimal.valueOf(Double.parseDouble(String.valueOf(each.get("amount")))));
+						incomeDetails.setTxnRefNumber(each.get("transaction_ref_num") != null && !String.valueOf(each.get("transaction_ref_num")).isBlank() ?
+								String.valueOf(each.get("transaction_ref_num")): null);
+						return incomeDetails;
+					})
+					.toList();
+		}
+		
+		return List.of();
+	}
+	
+	private static final Logger log = LogManager.getLogger(TransactionsDaoImpl.class);
 	
 }
