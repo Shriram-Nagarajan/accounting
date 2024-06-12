@@ -21,6 +21,7 @@ import constants from '../common/constants';
 import { useSelector } from 'react-redux';
 import { useDispatch } from 'react-redux';
 import Income from './Income';
+import UAMApi from '../httputil/uam';
 
 const drawerWidth = 240;
 
@@ -64,9 +65,22 @@ function PostLogin(props) {
         setDrawerOpen(false);
     };
     const handleLogout = () => {
-        //dispatch(logout()); // dispatch the logout action
-        // You may want to redirect the user to the login page after logout
-        navigate(constants.loginURL);
+        UAMApi.logoutUser(
+            '',
+            (response) => {
+                console.log("logout user", response);
+                dispatch(logout());
+                navigate(constants.loginURL);
+
+
+            },
+            (error) => {
+                console.error("Error fetching session", error);
+                dispatch(logout()); // dispatch the logout action
+                navigate(constants.loginURL);
+
+            }
+        );
       };
     const drawer = (
         <div>

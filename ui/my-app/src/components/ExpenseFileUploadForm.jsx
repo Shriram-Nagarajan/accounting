@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState ,useEffect} from 'react';
 import accountingApi from '../httputil/accountingApi';
 import { Container, Paper, Chip, Divider, MenuItem, Typography, Grid, Button, Box, InputLabel, Select, Snackbar, Alert, TextField, FormControl } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -10,15 +10,21 @@ import FormHelperText from '@mui/material/FormHelperText';
 import DateRangePickerComponent from './DateRangePicker';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
+import dayjs from 'dayjs';
+import ModalPopupforIncomePreview from './IncomePreviewModal';
 
 function ExpenseFileUploadForm() {
-  const [open, setOpen] = useState(false);
-  const [previewData, setPreviewData] = useState(null);
+  const [expenseTableOpen, setExpenseTableOpen] = useState(false);
+  const [incomeTableOpen, setIncomeTableOpen] = useState(false);
+
+  const [expensepreviewData, setExpensePreviewData] = useState(null);
+  const [incomepreviewData, setIncomePreviewData] = useState(null);
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [tabValue, setTabValue] = useState(0);
 
   const [ExpenseFormData, setExpenseFormData] = useState({
-    date: new Date(),
+    date: dayjs(),
     category: '',
     description: '',
     creditTxn: false,
@@ -26,15 +32,15 @@ function ExpenseFileUploadForm() {
     amount: '',
   });
   const [IncomeFormData, setIncomeFormData] = useState({
-    date: new Date(),
-    category: '',
-    description: '',
-    creditTxn: false,
-    reversalTxn: false,
+    date: dayjs(),
+    description:'',
     amount: '',
+    creditTxn: true,
+    reversalTxn: false,
+
   });
   const [expenseFromUser, setExpenseFromUser] = useState([{
-    date: new Date(),
+    date: dayjs(),
     category: '',
     description: '',
     creditTxn: false,
@@ -42,17 +48,36 @@ function ExpenseFileUploadForm() {
     amount: '',
 
   }]);
-  const [count, setCount] = useState(0);
+  const [incomeFromUser, setIncomeFromUser] = useState([{
+    date: dayjs(),
+    description:'',
+    amount: '',
+    creditTxn: true,
+    reversalTxn: false,
+
+  }]);
+  const [ExpenseCount, setExpenseCount] = useState(0);
+  const [IncomeCount, setIncomeCount] = useState(0);
   const [uploadStatus, setUploadStatus] = useState("");
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
   const [categories, setCategories] = useState(['grocery', 'misc', 'emi', 'food order', 'medical']);
-  const [categorySuggestions, setCategorySuggestions] = useState(['insurance', 'householditems', 'utility bills', 'service']);
+  const [categorySuggestions, setCategorySuggestions] = useState([]);//'insurance', 'householditems', 'utility bills', 'service']
   const [newCategory, setNewCategory] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [formErrors, setFormErrors] = useState({});
-  // useEffect(() => {
+  useEffect(() => {
+    const getDefaultCategories = () => {
+      accountingApi.getDefaultCategories('', (response) => {
+        console.log(response.data);
+        setCategorySuggestions(response.data.map(x => x.categoryName));
+        console.log(categorySuggestions)
+      }, (error) => {
+        console.error("Error fetching expenses", error);
+      });
+    };
+  
   //   // Hardcoding the initial categories and suggestions
   //   const acategories = ['grocery', 'misc', 'emi', 'food order', 'medical'];
   //   const asuggestions = ['insurance', 'householditems', 'utility bills', 'service'];
@@ -72,8 +97,8 @@ function ExpenseFileUploadForm() {
   //   //   }
   //   // };
 
-  //   // fetchCategoriesAndSuggestions();
-  // }, []);
+    getDefaultCategories();
+  }, []);
   const showAlert = (message, severity) => {
     setAlertMessage(message);
     setAlertSeverity(severity);
@@ -112,13 +137,27 @@ function ExpenseFileUploadForm() {
     }
   };
   const handleExpenseInputChange = (e) => {
-    const { name, value } = e.target;
-    setExpenseFormData({ ...ExpenseFormData, [name]: value });
+    if (e.target) {
+      const { name, value } = e.target;
+      setExpenseFormData({ ...ExpenseFormData, [name]: value });
+  } 
+  else if (e) {
+      // Adjust this based on actual structure of e.value
+      let formattedDate = e.format('YYYY-MM-DD');
+      setExpenseFormData({ ...ExpenseFormData, date: formattedDate });
+  } 
   };
   const handleIncomeInputChange = (e) => {
-    const { name, value } = e.target;
-    setIncomeFormData({ ...IncomeFormData, [name]: value });
-  };
+    if (e.target) {
+      const { name, value } = e.target;
+      setIncomeFormData({ ...IncomeFormData, [name]: value });
+  } 
+  else if (e) {
+      // Adjust this based on actual structure of e.value
+      let formattedDate = e.format('YYYY-MM-DD');
+      setIncomeFormData({ ...IncomeFormData, date: formattedDate });
+  }  
+};
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -139,6 +178,9 @@ function ExpenseFileUploadForm() {
       setCategories([...categories, newCategory]);
       setNewCategory('');
       setSelectedCategory(newCategory);
+      // const { name, value } = event.target;
+      setExpenseFormData({ ...ExpenseFormData, category: newCategory });
+  
     }
   };
 
@@ -146,24 +188,24 @@ function ExpenseFileUploadForm() {
     setNewCategory(suggestion);
   };
 
-  const handleAddClick = () => {
-    validateForm(ExpenseFormData);
+  const handleAddExpenseClick = () => {
+    validateExpenseForm(ExpenseFormData);
     const isEmpty = Object.values(ExpenseFormData).some(value =>
       (typeof value === 'string' && value.trim() === '') ||
       value === null ||
       value === undefined
     );
-    const errors = validateForm(ExpenseFormData);
+    const errors = validateExpenseForm(ExpenseFormData);
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
     }
     else if (isEmpty) {
-      showAlert("Date,Description,Amount,Category are mandatory. Please fill out.", "error")
+      showAlert("Date,Description,Amount. Please fill out.", "error")
     }
     else {
       setExpenseFromUser([...expenseFromUser, ExpenseFormData]);
       setExpenseFormData({
-        date: new Date(),
+        date: dayjs(),
         category: '',
         description: '',
         creditTxn: false,
@@ -171,37 +213,102 @@ function ExpenseFileUploadForm() {
         amount: '',
       });
       setSelectedCategory('');
-      setCount(count + 1);
+      setExpenseCount(ExpenseCount + 1);
       showAlert("Expense added", "success");
       console.log(expenseFromUser)
     }
   };
+  const handlePreviewExpenseClick = () => {
+    const fData = expenseFromUser.slice(1);
+    setExpensePreviewData(fData);
+    setExpenseTableOpen(true);
 
+  }
+  const handleAddIncomeClick = () => {
+    validateIncomeForm(IncomeFormData);
+    const isEmpty = Object.values(IncomeFormData).some(value =>
+      (typeof value === 'string' && value.trim() === '') ||
+      value === null ||
+      value === undefined
+    );
+    const errors = validateIncomeForm(IncomeFormData);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+    }
+    else if (isEmpty) {
+      showAlert("Date,Description,Amount,Category are mandatory. Please fill out.", "error")
+    }
+    else {
+      setIncomeFromUser([...incomeFromUser, IncomeFormData]);
+      setIncomeFormData({
+        date: dayjs(),
+        description:'',
+        amount: '',
+        creditTxn: true,
+        reversalTxn: false,
+    
+          });
+      setIncomeCount(IncomeCount + 1);
+      showAlert("Income added", "success");
+      console.log(incomeFromUser)
+    }
+  };
+  const handlePreviewIncomeClick = () => {
+    const fData = incomeFromUser.slice(1);
+    setIncomePreviewData(fData);
+    setIncomeTableOpen(true);
 
-  const handleClose = () => {
-    setOpen(false);
+  }
+  const handleExpenseTableClose = () => {
+    setExpenseTableOpen(false);
+  };
+  const handleIncomeTableClose = () => {
+    setIncomeTableOpen(false);
   };
   const handleSaveAPISuccess = () => {
-    handleClose();
-    setExpenseFromUser([]);
-    setExpenseFormData({
-      date: new Date(),
-      category: '',
-      description: '',
-      creditTxn: false,
-      reversalTxn: false,
-      amount: '',
-    });
-    setSelectedCategory('');
-    setCount(0);
-  }
-  const handlePreviewClick = () => {
-    const fData = expenseFromUser;//.slice(1);
-    setPreviewData(fData);
-    setOpen(true);
+    if(expenseFromUser != null)
+      {
+        handleExpenseTableClose();
+        setExpenseFromUser([]);
+        setExpenseFormData({
+          date: dayjs(),
+          category: '',
+          description: '',
+          creditTxn: false,
+          reversalTxn: false,
+          amount: '',
+        });
+        setSelectedCategory('');
+        setExpenseCount(0);
+      }
+      if(incomeFromUser != null)
+        {
+          handleIncomeTableClose();
+            setIncomeFromUser([]);
+            setIncomeFormData({
+            date: dayjs(),
+            description:'',
+            amount: '',
+            creditTxn: true,
+            reversalTxn: false,
+        
+              });
+          setIncomeCount(0);
 
+        }
+    
   }
-  const validateForm = (data) => {
+  // const handleSaveIncomeAPISuccess = () => {
+  //   handleClose();
+  //   setIncomeFromUser([]);
+  //   setIncomeFormData({
+  //     date: dayjs(),
+  //     description:'',
+  //     amount: '',
+  //       });
+  //   setIncomeCount(0);
+  // }
+  const validateExpenseForm = (data) => {
     const errors = {};
     const scriptTagPattern = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
 
@@ -212,6 +319,25 @@ function ExpenseFileUploadForm() {
       errors.category = 'Category is required';
     } else if (scriptTagPattern.test(data.category)) {
       errors.category = 'Category must not contain script tags';
+    }
+    if (!data.description) {
+      errors.description = 'Description is required';
+    } else if (scriptTagPattern.test(data.description)) {
+      errors.description = 'Description must not contain script tags';
+    }
+    
+    if (!data.amount || isNaN(data.amount)) {
+      errors.amount = 'Amount is required and must be a number';
+    }
+
+    return errors;
+  };
+  const validateIncomeForm = (data) => {
+    const errors = {};
+    const scriptTagPattern = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+
+    if (!data.date) {
+      errors.date = 'Date is required';
     }
     if (!data.description) {
       errors.description = 'Description is required';
@@ -440,11 +566,11 @@ function ExpenseFileUploadForm() {
                   justifyContent: 'center',
                 }}>
                   <Grid item xs={12} md={6}>
-                    <Button variant="contained" color="primary" type="button" fullWidth onClick={handleAddClick}>Add Expense</Button>
+                    <Button variant="contained" color="primary" type="button" fullWidth onClick={handleAddExpenseClick}>Add Expense</Button>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Badge color="primary" badgeContent={count}>
-                      <Button variant="contained" color="secondary" type="button" fullWidth onClick={handlePreviewClick}>
+                    <Badge color="primary" badgeContent={ExpenseCount}>
+                      <Button variant="contained" color="secondary" type="button" fullWidth onClick={handlePreviewExpenseClick}>
                         Preview & Save
                       </Button>
                     </Badge>
@@ -466,7 +592,16 @@ function ExpenseFileUploadForm() {
                 >
 
                   {/* Income form fields */}
-                  <DateRangePickerComponent xs={12} md={6}
+                  {/* <DateRangePickerComponent xs={12} md={6}
+                  label="Date"
+                  value={IncomeFormData.date}
+                  onChange={handleIncomeInputChange}
+                  fullWidth
+                  error={!!formErrors.date}
+                  helperText={formErrors.date}
+                  
+                /> */}
+                <DateRangePickerComponent xs={12} md={6}
                   label="Date"
                   value={IncomeFormData.date}
                   onChange={handleIncomeInputChange}
@@ -500,6 +635,21 @@ function ExpenseFileUploadForm() {
                   helperText={formErrors.amount}
                 // required
                 />
+                <Grid container spacing={1} sx={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}>
+                  <Grid item xs={12} md={6}>
+                    <Button variant="contained" color="primary" type="button" fullWidth onClick={handleAddIncomeClick}>Add Income</Button>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Badge color="primary" badgeContent={IncomeCount}>
+                      <Button variant="contained" color="secondary" type="button" fullWidth onClick={handlePreviewIncomeClick}>
+                        Preview & Save
+                      </Button>
+                    </Badge>
+                  </Grid>
+                  </Grid>
                 </Box>
               )}
               </Box>
@@ -513,7 +663,8 @@ function ExpenseFileUploadForm() {
           {alertMessage}
         </Alert>
       </Snackbar>
-      <ModalPopup open={open} handleClose={handleClose} data={previewData} from="efileuploadforpreview" onApiSuccess={handleSaveAPISuccess} />
+      <ModalPopup open={expenseTableOpen} handleClose={handleExpenseTableClose} data={expensepreviewData} from="efileuploadforpreview" onApiSuccess={handleSaveAPISuccess} />
+      <ModalPopupforIncomePreview open={incomeTableOpen} handleClose={handleIncomeTableClose} data={incomepreviewData} onSaveIncomeApiSuccess={handleSaveAPISuccess}/>
     </Container>
 
 

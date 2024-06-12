@@ -125,7 +125,6 @@ function ExpenseInsights()
         <Typography variant="h4" gutterBottom>
           Expense Insights
         </Typography>
-        <MoneyAnimation />
         <form onSubmit={handleSubmit}>
           <Grid container spacing={2} alignItems="center">
             <Grid item xs={12} sm={4}>

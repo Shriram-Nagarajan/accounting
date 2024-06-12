@@ -1,0 +1,164 @@
+// IncomePreviewModal.jsx
+import React,{useEffect, useState} from 'react';
+import { Modal, Box, Typography,Alert,Button,Snackbar } from '@mui/material';
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell, { tableCellClasses } from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
+import { styled } from '@mui/material/styles';
+import accountingApi from '../httputil/accountingApi';
+
+
+const style = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    width: 900,
+    maxHeight: 400,  // Set a fixed height for the modal content
+    bgcolor: 'background.paper',
+    border: '2px solid #000',
+    boxShadow: 24,
+    p: 4,
+    overflowY: 'auto', // Enable vertical scrolling
+};
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+    [`&.${tableCellClasses.head}`]: {
+      backgroundColor: 'rgb(25, 118, 210)',//backgroundColor: theme.palette.common.black,
+      color: theme.palette.common.white,
+    },
+    [`&.${tableCellClasses.body}`]: {
+      fontSize: 14,
+    },
+  }));
+  
+  const StyledTableRow = styled(TableRow)(({ theme }) => ({
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.action.hover,
+    },
+    // hide last border
+    '&:last-child td, &:last-child th': {
+      border: 0,
+    },
+  }));
+  
+ 
+function ModalPopupforIncomePreview({ open, handleClose, data,onSaveIncomeApiSuccess }) {
+  let index =0;
+  const [alertOpen, setAlertOpen] = useState(false);
+const [alertMessage, setAlertMessage] = useState('');
+const [alertSeverity, setAlertSeverity] = useState('success');
+
+  const[isPreview,setIsPreview] = useState(false);
+  const [sumTotalExpenditure, setSumTotalExpenditure] = useState(0);
+ 
+  // useEffect(() => {
+  //   if (data) {
+  //     const totalExpenditure = data.map(exp => exp.amount).reduce((acc, val) => acc + val, 0);
+  //     setSumTotalExpenditure(totalExpenditure);
+  //   }
+  // }, [data]);
+     
+  const handleSaveAllClick = (event) => {
+    // if(isPreview)
+    //   {
+        event.preventDefault();
+    // const fData = data.slice(1);
+    // console.log(fData);
+    const reqData = {
+      "deleteExisting" : false,
+      "incomeDetails": data,
+  }
+    accountingApi.saveIncome(reqData, (response) => {
+      showAlert("Income saved successfully", "success");
+      onSaveIncomeApiSuccess();
+    }, (error) => {
+      showAlert("Error saving expenses", "error");
+    });
+      // }
+    
+  }; 
+  const showAlert = (message, severity) => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setAlertOpen(true);
+  };
+  const formatDate = (date) => {
+    const d = new Date(date);
+    return d.toLocaleDateString('en-GB'); // Adjust the format as needed
+  };
+    return (
+        <><Modal
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={style}>
+          <div>
+            {data ?
+              <TableContainer component={Paper} sx={{ maxHeight: 450 }}>
+                <Table stickyHeader sx={{ minWidth: 550 }} size="small" aria-label="customizedtable">
+                  <TableHead>
+                    <TableRow>
+                      <StyledTableCell align="center">Date</StyledTableCell>
+                      <StyledTableCell align="center">Description</StyledTableCell>
+                      <StyledTableCell align="left">Amount&nbsp;(in ₹)</StyledTableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {data.map((row) => (
+                      <StyledTableRow
+                        key={++index}
+                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                      >
+                        <StyledTableCell align="left" component="th" scope="row" sx={{ width: "120px" }}>
+                          {formatDate(row.date)}
+                        </StyledTableCell>
+                        <StyledTableCell align="left">{row.description}</StyledTableCell>
+                        <StyledTableCell align="right" sx={{ width: "120px" }}>{row.amount}</StyledTableCell>
+                      </StyledTableRow>
+
+                    ))}
+                    {/* <StyledTableRow>
+                      <StyledTableCell align="left" colSpan={2} sx={{ fontWeight: "bold" }}>Total expenditure</StyledTableCell>
+                      <StyledTableCell align="right" sx={{ fontWeight: "bold" }}>₹{sumTotalExpenditure}</StyledTableCell>
+                    </StyledTableRow> */}
+                    <StyledTableRow>
+                      <StyledTableCell align="right" colspan={4}><Button variant="contained" color="success" type="submit" fullWidth onClick={handleSaveAllClick}>
+                        Save All
+                      </Button></StyledTableCell>
+                    </StyledTableRow>
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              : null}
+
+            {/* <span>{'Total expenditure: Rs. ' + sumTotalExpenditure}</span> */}
+          </div>
+          {/* <Typography id="modal-modal-title" variant="h6" component="h2">
+        Slice Details
+    </Typography>
+    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+        {data ? (
+            <>
+                <p>Label: {data.label}</p>
+                <p>Value: {data.value}</p>
+            </>
+        ) : (
+            <p>No data available</p>
+        )}
+    </Typography> */}
+        </Box>
+      </Modal><Snackbar open={alertOpen} autoHideDuration={6000} onClose={() => setAlertOpen(false)}>
+          <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: '100%' }}>
+            {alertMessage}
+          </Alert>
+        </Snackbar></>
+    );
+}
+
+export default ModalPopupforIncomePreview;
