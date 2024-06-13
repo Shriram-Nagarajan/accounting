@@ -1,6 +1,7 @@
 package com.um.controller;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.logging.log4j.LogManager;
@@ -18,6 +19,7 @@ import com.um.handler.LoginLogoutHandler;
 import com.um.model.ApiResponse;
 import com.um.model.LoginRequest;
 import com.um.model.LoginResponse;
+import com.um.model.User;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -34,17 +36,21 @@ public class UserController {
 	}
 	
 	@PostMapping(path="/login")
-	public ResponseEntity<LoginResponse> login(@RequestBody(required = true) LoginRequest loginRequest, HttpServletResponse response) throws ValidationException {
+	public ResponseEntity<LoginResponse> login(@RequestBody(required = true) LoginRequest loginRequest,
+			HttpServletRequest request,
+			HttpServletResponse response) throws ValidationException {
 		
 		String reqId = UUID.randomUUID().toString();
 		log.info("Request received login- reqId: " + reqId);
-		UserEntity user = loginLogoutHandler.loginUser(loginRequest.getUserId(), loginRequest.getPassword());
+		UserEntity userEntity = loginLogoutHandler.loginUser(loginRequest.getUserId(), loginRequest.getPassword());
 		
 		LoginResponse loginResponse = new LoginResponse();
-		if(user != null) {
-			sessionHandler.addSession(user, response);
+		if(userEntity != null) {
+			User user = new User();
+			user.setUserEntity(userEntity);
+			sessionHandler.createSessionOnLogin(user, request, response);
 			loginResponse.setSuccessful(true);
-			loginResponse.setUser(user);
+			loginResponse.setUser(userEntity);
 		}
 		
 		log.info("Responding to login request - reqId: "+ reqId +" with message: " + loginResponse.getMessage());
@@ -53,12 +59,13 @@ public class UserController {
 	
 	@GetMapping("/get-session")
 	public ResponseEntity<UserEntity> getSession(HttpServletRequest request) throws ValidationException {
-		return ResponseEntity.ok(sessionHandler.getSession(request));
+		User user = sessionHandler.getSession(request, true);
+		return ResponseEntity.ok(Optional.ofNullable(user).isPresent() ? user.getUserEntity() : null);
 	}
 	
 	@GetMapping("/logout")
-	public ResponseEntity<ApiResponse> logout(HttpServletRequest request) throws ValidationException {
-		sessionHandler.removeSession(request);
+	public ResponseEntity<ApiResponse> logout(HttpServletRequest request, HttpServletResponse response) throws ValidationException {
+		sessionHandler.removeSessionOnLogout(request, response);
 		return ResponseEntity.ok().body(new ApiResponse(200, ApiResponse.SUCCESS));
 	}
 	
