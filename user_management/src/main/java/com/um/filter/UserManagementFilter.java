@@ -52,6 +52,8 @@ public class UserManagementFilter extends OncePerRequestFilter {
 					response.setStatus(403);
 					response.getWriter().write("User not logged in!");
 					response.getWriter().flush();
+				}	else {
+					filterChain.doFilter(request, response);
 				}
 			}
 		} catch (ValidationException e) {

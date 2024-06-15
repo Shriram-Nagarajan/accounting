@@ -1,11 +1,11 @@
 package com.um.model;
 
-import com.um.entity.UserEntity;
+import com.common.model.UserDetails;
 
 public class LoginResponse extends ApiResponse {
 
 	private boolean successful;
-	private UserEntity user;
+	private UserDetails user;
 	
 	public LoginResponse(int statusCode, String message) {
 		super(statusCode, message);
@@ -24,11 +24,11 @@ public class LoginResponse extends ApiResponse {
 		this.successful = successful;
 	}
 
-	public UserEntity getUser() {
+	public UserDetails getUser() {
 		return user;
 	}
 
-	public void setUser(UserEntity user) {
+	public void setUser(UserDetails user) {
 		this.user = user;
 	}
 

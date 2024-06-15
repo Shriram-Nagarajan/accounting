@@ -48,10 +48,11 @@ public class UserController {
 		LoginResponse loginResponse = new LoginResponse();
 		if(userEntity != null) {
 			User user = new User();
-			user.setUserDetails(userEntity.getUserDetails());
+			UserDetails userDetails = userEntity.getUserDetails();
+			user.setUserDetails(userDetails);
 			sessionHandler.createSessionOnLogin(user, request, response);
 			loginResponse.setSuccessful(true);
-			loginResponse.setUser(userEntity);
+			loginResponse.setUser(userDetails);
 		}
 		
 		log.info("Responding to login request - reqId: "+ reqId +" with message: " + loginResponse.getMessage());

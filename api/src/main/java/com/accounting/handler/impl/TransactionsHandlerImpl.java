@@ -89,6 +89,11 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 		return transactionsDao.getIncomeDetails(accountIds, fromDate, toDate);
 	}
 	
-	private static final Logger log = LogManager.getLogger(TransactionsHandlerImpl.class);
+	@Override
+	public List<Category> getCategoriesForAccounts(List<Long> accountIds) {
+		return transactionsDao.getCategoriesForAccounts(accountIds);
+	}
 	
+	private static final Logger log = LogManager.getLogger(TransactionsHandlerImpl.class);
+
 }

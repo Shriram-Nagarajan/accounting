@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.accounting.entity.Category;
+import com.accounting.handler.TransactionsHandler;
 import com.accounting.model.AccountingUser;
 import com.accounting.repository.CategoryRepository;
 import com.common.auth.UserThreadLocal;
@@ -15,9 +16,11 @@ import com.common.auth.UserThreadLocal;
 public class CategoriesController {
 
 	private CategoryRepository categoryRepository;
+	private TransactionsHandler transactionsHandler;
 	
-	public CategoriesController(CategoryRepository repository) {
+	public CategoriesController(CategoryRepository repository, TransactionsHandler transactionsHandler) {
 		this.categoryRepository = repository;
+		this.transactionsHandler = transactionsHandler;
 	}
 	
 	@GetMapping("/category/default")
@@ -29,9 +32,7 @@ public class CategoriesController {
 	@GetMapping("/category/user")
 	public ResponseEntity<List<Category>> getUserCategories() {
 		UserThreadLocal<AccountingUser> threadLocal = new UserThreadLocal<AccountingUser>();
-		//TODO: Complete this API
-		List<Long> userAccountIds = threadLocal.get().getUserAccounts();
-		List<Category> categoryList = categoryRepository.findByIsDefaultCategory(true);
+		List<Category> categoryList = transactionsHandler.getCategoriesForAccounts(threadLocal.get().getUserAccounts());
 		return ResponseEntity.ok(categoryList);
 	}
 	

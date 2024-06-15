@@ -3,6 +3,7 @@ package com.accounting.dao;
 import java.time.LocalDate;
 import java.util.List;
 
+import com.accounting.entity.Category;
 import com.accounting.entity.ExpenseDetailsEntity;
 import com.accounting.entity.TransactionEntity;
 import com.accounting.model.CategoryWiseExpense;
@@ -24,5 +25,7 @@ public interface TransactionsDao {
 	public List<ExpenseDetails> getExpenses(List<Long> accountIds, int categoryId, String fromDate, String toDate);
 	
 	public List<TransactionRecord> getIncomeDetails(List<Long> accountIds, String fromDate, String toDate);
+	
+	public List<Category> getCategoriesForAccounts(List<Long> accountIds);
 	
 }

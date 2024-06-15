@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.accounting.dao.TransactionsDao;
+import com.accounting.entity.Category;
 import com.accounting.entity.ExpenseDetailsEntity;
 import com.accounting.entity.TransactionEntity;
 import com.accounting.model.CategoryWiseExpense;
@@ -211,6 +212,24 @@ public class TransactionsDaoImpl implements TransactionsDao {
 					.toList();
 		}
 		
+		return List.of();
+	}
+	
+	public List<Category> getCategoriesForAccounts(List<Long> accountIds) {
+		String query = env.getProperty("get_user_categories");
+		if(accountIds != null && accountIds.size() > 0 && query != null) {
+			Map<String, List<Long>> paramMap = new HashMap<String, List<Long>> () ;
+			paramMap.put("accountId", accountIds);
+			return accountsNamedTemplate.queryForList(query, paramMap)
+						.stream()
+						.map((map) -> {
+							Category category = new Category();
+							category.setId(Integer.parseInt(String.valueOf(map.get("category_id"))));
+							category.setCategoryName(String.valueOf(map.get("category_name")));
+							category.setDefaultCategory(false);
+							return category;
+						}).toList();
+		}
 		return List.of();
 	}
 	
