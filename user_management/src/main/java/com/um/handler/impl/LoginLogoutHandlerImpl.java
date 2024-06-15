@@ -5,7 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.um.entity.UserEntity;
-import com.um.exception.ValidationException;
+import com.common.exception.ValidationException;
 import com.um.handler.LoginLogoutHandler;
 import com.um.repository.UserRepository;
 import com.um.util.LoginLogoutErrors;

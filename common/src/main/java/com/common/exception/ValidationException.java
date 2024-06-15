@@ -1,4 +1,4 @@
-package com.um.exception;
+package com.common.exception;
 
 public class ValidationException extends Exception {
 

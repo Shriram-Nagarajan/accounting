@@ -75,18 +75,18 @@ public class TransactionsHandlerImpl implements TransactionsHandler{
 	}
 
 	@Override
-	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate) {
-		return transactionsDao.getCategoryWiseExpenses(accountId, fromDate, toDate);
+	public List<CategoryWiseExpense> getCategoryWiseExpenses(List<Long> accountIds, String fromDate, String toDate) {
+		return transactionsDao.getCategoryWiseExpenses(accountIds, fromDate, toDate);
 	}
 
 	@Override
-	public List<ExpenseDetails> getExpenses(long accountId, int categoryId, String fromDate, String toDate) {
-		return transactionsDao.getExpenses(accountId, categoryId, fromDate, toDate);
+	public List<ExpenseDetails> getExpenses(List<Long> accountIds, int categoryId, String fromDate, String toDate) {
+		return transactionsDao.getExpenses(accountIds, categoryId, fromDate, toDate);
 	}
 
 	@Override
-	public List<TransactionRecord> getIncomeDetails(long accountId, String fromDate, String toDate) {
-		return transactionsDao.getIncomeDetails(accountId, fromDate, toDate);
+	public List<TransactionRecord> getIncomeDetails(List<Long> accountIds, String fromDate, String toDate) {
+		return transactionsDao.getIncomeDetails(accountIds, fromDate, toDate);
 	}
 	
 	private static final Logger log = LogManager.getLogger(TransactionsHandlerImpl.class);

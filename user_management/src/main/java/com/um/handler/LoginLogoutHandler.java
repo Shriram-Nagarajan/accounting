@@ -1,7 +1,7 @@
 package com.um.handler;
 
 import com.um.entity.UserEntity;
-import com.um.exception.ValidationException;
+import com.common.exception.ValidationException;
 
 public interface LoginLogoutHandler {
 

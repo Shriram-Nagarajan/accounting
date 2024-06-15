@@ -1,10 +1,10 @@
 package com.common.session;
 
-public interface SessionCache {
+public interface SessionCache<T> {
 	
-	public void store(String key, Object value, int expirationSeconds);
+	public void store(String key, T value, int expirationSeconds);
 	
-	public Object get(String key);
+	public T get(String key);
 	
 	public void delete(String key);
 

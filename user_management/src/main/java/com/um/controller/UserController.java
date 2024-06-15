@@ -12,14 +12,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.common.exception.ValidationException;
+import com.common.model.User;
+import com.common.model.UserDetails;
 import com.um.auth.UserSessionHandler;
 import com.um.entity.UserEntity;
-import com.um.exception.ValidationException;
 import com.um.handler.LoginLogoutHandler;
 import com.um.model.ApiResponse;
 import com.um.model.LoginRequest;
 import com.um.model.LoginResponse;
-import com.um.model.User;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,7 +48,7 @@ public class UserController {
 		LoginResponse loginResponse = new LoginResponse();
 		if(userEntity != null) {
 			User user = new User();
-			user.setUserEntity(userEntity);
+			user.setUserDetails(userEntity.getUserDetails());
 			sessionHandler.createSessionOnLogin(user, request, response);
 			loginResponse.setSuccessful(true);
 			loginResponse.setUser(userEntity);
@@ -58,9 +59,9 @@ public class UserController {
 	}
 	
 	@GetMapping("/get-session")
-	public ResponseEntity<UserEntity> getSession(HttpServletRequest request) throws ValidationException {
+	public ResponseEntity<UserDetails> getSession(HttpServletRequest request) throws ValidationException {
 		User user = sessionHandler.getSession(request, true);
-		return ResponseEntity.ok(Optional.ofNullable(user).isPresent() ? user.getUserEntity() : null);
+		return ResponseEntity.ok(Optional.ofNullable(user).isPresent() ? user.getUserDetails() : null);
 	}
 	
 	@GetMapping("/logout")

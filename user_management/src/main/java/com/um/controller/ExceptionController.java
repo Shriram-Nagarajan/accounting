@@ -6,7 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import com.um.exception.ValidationException;
+import com.common.exception.ValidationException;
 import com.um.model.ErrorResponse;
 import com.um.model.ValidationResponse;
 

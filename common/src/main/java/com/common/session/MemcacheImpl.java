@@ -6,14 +6,12 @@ import java.util.concurrent.TimeoutException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import com.common.Properties;
-
 import net.rubyeye.xmemcached.MemcachedClient;
 import net.rubyeye.xmemcached.XMemcachedClientBuilder;
 import net.rubyeye.xmemcached.exception.MemcachedException;
 import net.rubyeye.xmemcached.utils.AddrUtil;
 
-public class MemcacheImpl implements SessionCache {
+public class MemcacheImpl<T> implements SessionCache<T> {
 
 	private final MemcachedClient client;
 	
@@ -25,7 +23,7 @@ public class MemcacheImpl implements SessionCache {
 	}
 	
 	@Override
-	public void store(String key, Object value, int expirationSeconds) {
+	public void store(String key, T value, int expirationSeconds) {
 		try {
 			client.set(key, expirationSeconds, value);
 		} catch (TimeoutException | InterruptedException | MemcachedException e) {
@@ -34,7 +32,7 @@ public class MemcacheImpl implements SessionCache {
 	}
 
 	@Override
-	public Object get(String key) {
+	public T get(String key) {
 		try {
 			return client.get(key);
 		} catch (TimeoutException | InterruptedException | MemcachedException e) {

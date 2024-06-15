@@ -9,3 +9,7 @@ INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Depo
 INSERT INTO `accounts`.`categories` (`category_name`,`is_default`) VALUES ('Travel',true);
 
 INSERT INTO `accounts`.`account_details` (`account_number`, `name`) VALUES ('4895', 'test');
+
+INSERT INTO `accounts`.`user_account_mapping` (`user_id`, `account_id`) VALUES ('1', '1');
+INSERT INTO `accounts`.`user_account_mapping` (`user_id`, `account_id`) VALUES ('2', '1');
+

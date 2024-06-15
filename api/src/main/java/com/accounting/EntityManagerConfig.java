@@ -1,10 +1,11 @@
-package com.um;
+package com.accounting;
 
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -17,15 +18,17 @@ import jakarta.persistence.EntityManagerFactory;
 @EnableTransactionManagement
 public class EntityManagerConfig {
 
-    @Bean("entityManagerFactory")
-    LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("userDataSource") DataSource userDataSource) {
+	@Primary
+	@Bean("entityManagerFactory")
+    LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("accountsDataSource") DataSource accountsDataSource) {
     	LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
-    	bean.setPackagesToScan("com.um.entity");
-    	bean.setDataSource(userDataSource);
+    	bean.setPackagesToScan("com.accounting.entity");
+    	bean.setDataSource(accountsDataSource);
     	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
     	return bean;
     }
     
+	@Primary
     @Bean("transactionManager")
     public PlatformTransactionManager transactionManager(@Qualifier("entityManagerFactory") EntityManagerFactory entityManagerFactory) {
         return new JpaTransactionManager(entityManagerFactory);
@@ -35,7 +38,7 @@ public class EntityManagerConfig {
     @Bean("authDbEntityManagerFactory")
     LocalContainerEntityManagerFactoryBean authDbEntityManagerFactory(@Qualifier("authDataSource") DataSource authDataSource) {
     	LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
-    	bean.setPackagesToScan("com.um.auth.entity");
+    	bean.setPackagesToScan("com.accounting.auth.entity");
     	bean.setDataSource(authDataSource);
     	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
     	return bean;

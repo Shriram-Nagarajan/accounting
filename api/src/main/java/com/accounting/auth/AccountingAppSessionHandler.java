@@ -1,4 +1,4 @@
-package com.um.auth;
+package com.accounting.auth;
 
 import java.util.List;
 import java.util.Optional;
@@ -6,25 +6,26 @@ import java.util.Optional;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import com.accounting.model.AccountingUser;
 import com.common.auth.SessionIdGenerator;
 import com.common.auth.UserThreadLocal;
-import com.common.session.SessionCache;
 import com.common.exception.ValidationException;
 import com.common.model.User;
+import com.common.session.SessionCache;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Service("userSessionHandler")
-public class UserSessionHandler {
+@Service("accountingAppSessionHandler")
+public class AccountingAppSessionHandler {
 
 	private SessionCache<User> sessionCache;
 	private String sessionTokenName;
 	private String sessionDomain;
 	private Environment env;
 	
-	public UserSessionHandler(SessionCache<User> memCache, Environment env) {
+	public AccountingAppSessionHandler(SessionCache<User> memCache, Environment env) {
 		sessionCache = memCache;
 		this.env = env;
 		sessionTokenName = env.getProperty("session.auth-token");
@@ -56,7 +57,7 @@ public class UserSessionHandler {
 	}
 	
 	public User getSession(HttpServletRequest request, boolean extendSession) throws ValidationException {
-		UserThreadLocal<User> threadLocal = new UserThreadLocal<User>();
+		UserThreadLocal<AccountingUser> threadLocal = new UserThreadLocal<AccountingUser>();
 		if(threadLocal.get() != null) {
 			return threadLocal.get();
 		} else {
@@ -69,6 +70,7 @@ public class UserSessionHandler {
 				String userSessionId = sessionCookie.getValue();
 				if(isValidSessionId(userSessionId)) {
 					User user = sessionCache.get(userSessionId);
+
 					if(user != null) {
 						if(extendSession) {
 							sessionCache.store(userSessionId, user, Integer.parseInt(env.getProperty("session.expiry.seconds")));
@@ -122,5 +124,5 @@ public class UserSessionHandler {
 				});
 			});
 	}
-	
+
 }

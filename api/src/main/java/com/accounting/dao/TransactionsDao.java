@@ -19,10 +19,10 @@ public interface TransactionsDao {
 	
 	public void saveExpenseDetailEntities(List<ExpenseDetailsEntity> expenseDetails);
 	
-	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate);
+	public List<CategoryWiseExpense> getCategoryWiseExpenses(List<Long> accountIds, String fromDate, String toDate);
 	
-	public List<ExpenseDetails> getExpenses(long accountId, int categoryId, String fromDate, String toDate);
+	public List<ExpenseDetails> getExpenses(List<Long> accountIds, int categoryId, String fromDate, String toDate);
 	
-	public List<TransactionRecord> getIncomeDetails(long accountId, String fromDate, String toDate);
+	public List<TransactionRecord> getIncomeDetails(List<Long> accountIds, String fromDate, String toDate);
 	
 }

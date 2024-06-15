@@ -2,6 +2,7 @@ package com.um.entity;
 
 import java.io.Serializable;
 
+import com.common.model.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import jakarta.persistence.Column;
@@ -64,6 +65,16 @@ public class UserEntity implements Serializable {
 	}
 	public void setEmailId(String emailId) {
 		this.emailId = emailId;
+	}
+	
+	public UserDetails getUserDetails() {
+		UserDetails userDetails = new UserDetails();
+		userDetails.setUserId(userId);
+		userDetails.setLoginId(loginId);
+		userDetails.setPassword(password);
+		userDetails.setEmailId(emailId);
+		userDetails.setName(name);
+		return userDetails;
 	}
 
 }

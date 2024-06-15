@@ -15,17 +15,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.accounting.handler.TransactionsHandler;
+import com.accounting.model.AccountingUser;
 import com.accounting.model.CategoryWiseExpense;
 import com.accounting.model.ExpenseDetails;
 import com.accounting.model.SaveExpensesRequest;
 import com.accounting.model.SaveIncomeDetails;
 import com.accounting.model.TransactionRecord;
 import com.accounting.util.DateUtil;
+import com.common.auth.UserThreadLocal;
 
 @RestController
 public class AccountingController {
-
-	private static final long DEFAULT_ACCOUNT_ID = 1;
 
 	private final TransactionsHandler transactionsHandler;
 	private final Environment env;
@@ -40,7 +40,7 @@ public class AccountingController {
 			@RequestParam(value = "fromDate", required = false) String fromDate,
 			@RequestParam(value = "toDate", required = false) String toDate) throws ParseException {
 		validateDate(fromDate, toDate);
-		return ResponseEntity.ok(transactionsHandler.getCategoryWiseExpenses(DEFAULT_ACCOUNT_ID,
+		return ResponseEntity.ok(transactionsHandler.getCategoryWiseExpenses(getUserAccountIds(),
 				fromDate, toDate));
 	}
 	
@@ -50,7 +50,7 @@ public class AccountingController {
 			@RequestParam(value = "fromDate", required = false) String fromDate,
 			@RequestParam(value = "toDate", required = false) String toDate) throws ParseException {
 		validateDate(fromDate, toDate);
-		return ResponseEntity.ok(transactionsHandler.getExpenses(DEFAULT_ACCOUNT_ID, categoryId,
+		return ResponseEntity.ok(transactionsHandler.getExpenses(getUserAccountIds(), categoryId,
 				fromDate, toDate));
 	}
 	
@@ -59,7 +59,7 @@ public class AccountingController {
 			@RequestParam(value = "fromDate", required = false) String fromDate,
 			@RequestParam(value = "toDate", required = false) String toDate) throws ParseException {
 		validateDate(fromDate, toDate);
-		return ResponseEntity.ok(transactionsHandler.getIncomeDetails(DEFAULT_ACCOUNT_ID, fromDate, toDate));
+		return ResponseEntity.ok(transactionsHandler.getIncomeDetails(getUserAccountIds(), fromDate, toDate));
 	}
 	
 	
@@ -72,7 +72,10 @@ public class AccountingController {
 				saveExpensesRequest.setDeleteExisting(false);
 			}
 		}
-		String status = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID,
+		List<Long> userAccountIds = getUserAccountIds();
+		//TODO: Choosing a default account for now, ideally should come from request
+		long defaultUserAccount = userAccountIds.get(0);
+		String status = transactionsHandler.saveTransactions(defaultUserAccount,
 				ExpenseDetails.getTransactionRecords(saveExpensesRequest.getExpenseList()),
 				saveExpensesRequest.getDeleteExisting());
 		log.info("Responding to saveExpenses request - reqId: "+ reqId +" with status: " + status);
@@ -83,8 +86,10 @@ public class AccountingController {
 	public ResponseEntity<String> saveIncomeDetails(@RequestBody SaveIncomeDetails saveIncomeDetails) {
 		String reqId = UUID.randomUUID().toString();
 		log.info("Request received saveIncomeDetails- reqId: " + reqId);
-
-		String status = transactionsHandler.saveTransactions(DEFAULT_ACCOUNT_ID,
+		List<Long> userAccountIds = getUserAccountIds();
+		//TODO: Choosing a default account for now, ideally should come from request
+		long defaultUserAccount = userAccountIds.get(0);
+		String status = transactionsHandler.saveTransactions(defaultUserAccount,
 				saveIncomeDetails.getIncomeDetails(),
 				saveIncomeDetails.isDeleteExisting());
 		log.info("Responding to saveIncomeDetails request - reqId: "+ reqId +" with status: " + status);
@@ -107,6 +112,11 @@ public class AccountingController {
         	throw new IllegalArgumentException("toDate must be after fromDate");
         }
 
+	}
+	
+	private List<Long> getUserAccountIds() {
+		UserThreadLocal<AccountingUser> userThreadLocal = new UserThreadLocal<AccountingUser>();
+		return userThreadLocal.get().getUserAccounts();
 	}
 	
 	private static final Logger log = LogManager.getLogger(AccountingController.class);

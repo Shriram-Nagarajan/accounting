@@ -123,11 +123,11 @@ public class TransactionsDaoImpl implements TransactionsDao {
 
 	@SuppressWarnings("serial")
 	@Override
-	public List<CategoryWiseExpense> getCategoryWiseExpenses(long accountId, String fromDate, String toDate) {
+	public List<CategoryWiseExpense> getCategoryWiseExpenses(List<Long> accountIds, String fromDate, String toDate) {
 		String query = env.getProperty("get_category_wise_expenses");
-		if(accountId > 0 && query != null && !query.isBlank()) {
+		if(accountIds.size() > 0 && query != null && !query.isBlank()) {
 			var resultList = accountsNamedTemplate.queryForList(query, new HashMap<> () {
-				{put("accountId", accountId);};
+				{put("accountId", accountIds);};
 				{put("fromDate", fromDate);};
 				{put("toDate", toDate);};
 			});
@@ -145,11 +145,11 @@ public class TransactionsDaoImpl implements TransactionsDao {
 	}
 
 	@Override
-	public List<ExpenseDetails> getExpenses(long accountId, int categoryId, String fromDate, String toDate) {
+	public List<ExpenseDetails> getExpenses(List<Long> accountIds, int categoryId, String fromDate, String toDate) {
 		String query = env.getProperty("get_expenses");
 		if(query != null && !query.isBlank() && fromDate != null && toDate != null) {
 			Map<String, Object> paramMap = new HashMap<>();
-			paramMap.put("accountId", accountId);
+			paramMap.put("accountId", accountIds);
 			paramMap.put("categoryId", categoryId);
 			paramMap.put("fromDate", fromDate);
 			paramMap.put("toDate", toDate);
@@ -179,13 +179,13 @@ public class TransactionsDaoImpl implements TransactionsDao {
 	}
 
 	@Override
-	public List<TransactionRecord> getIncomeDetails(long accountId, String fromDate, String toDate) {
+	public List<TransactionRecord> getIncomeDetails(List<Long> accountIds, String fromDate, String toDate) {
 		
 		String query = env.getProperty("get_income_details");
 		
 		if(query != null && !query.isBlank()) {
 			Map<String, Object> paramMap = new HashMap<String, Object>();
-			paramMap.put("accountId", accountId);
+			paramMap.put("accountId", accountIds);
 			paramMap.put("fromDate", fromDate);
 			paramMap.put("toDate", toDate);
 			List<Map<String, Object>> resultList = accountsNamedTemplate.queryForList(query, paramMap);

@@ -1,4 +1,4 @@
-package com.um.filter;
+package com.accounting.filter;
 
 import java.io.IOException;
 import java.util.List;
@@ -10,11 +10,12 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.accounting.auth.AccountingAppSessionHandler;
+import com.accounting.handler.UserAccountsHandler;
+import com.accounting.model.AccountingUser;
 import com.common.auth.UserThreadLocal;
 import com.common.exception.ValidationException;
 import com.common.model.User;
-import com.um.UserManagement;
-import com.um.auth.UserSessionHandler;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -22,13 +23,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @Component
-public class UserManagementFilter extends OncePerRequestFilter {
+public class AccountingAppFilter extends OncePerRequestFilter {
 	
-	private UserSessionHandler userSessionHandler;
+	private AccountingAppSessionHandler accountingAppSessionHandler;
+	private UserAccountsHandler userAccountsHandler;
 	private List<String> postLoginUrls;
 	
-	public UserManagementFilter(UserSessionHandler userSessionHandler, Environment env) {
-		this.userSessionHandler = userSessionHandler;
+	public AccountingAppFilter(AccountingAppSessionHandler accountingAppSessionHandler, UserAccountsHandler userAccountsHandler, Environment env) {
+		this.accountingAppSessionHandler = accountingAppSessionHandler;
+		this.userAccountsHandler = userAccountsHandler;
 		Optional.ofNullable(env.getProperty("session.post-login.routes"))
 			.ifPresent((routesStr) -> {
 				if(!routesStr.isBlank()) {
@@ -41,11 +44,17 @@ public class UserManagementFilter extends OncePerRequestFilter {
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
 
-		UserThreadLocal<User> userThreadLocal = new UserThreadLocal<User>();
+		UserThreadLocal<AccountingUser> userThreadLocal = new UserThreadLocal<AccountingUser>();
 		try {
-			User user = userSessionHandler.getSession(request, true);
+			User user = accountingAppSessionHandler.getSession(request, true);
 			if(user != null) {
-				userThreadLocal.put(user);
+				AccountingUser accountingUser = new AccountingUser(user);
+				List<Long> userAccountIds = userAccountsHandler
+						.findAccountsForUser(user.getUserDetails().getUserId())
+						.stream()
+						.map(account -> account.getUserAccountId().getAccountId()).toList();
+				accountingUser.setUserAccounts(userAccountIds);
+				userThreadLocal.put(accountingUser);
 				filterChain.doFilter(request, response);
 			}	else {
 				if(isSessionRequired(request.getPathInfo())) {
@@ -79,6 +88,6 @@ public class UserManagementFilter extends OncePerRequestFilter {
 				postLoginUrls.contains(path) : false;
 	}
 
-	private static final Logger log = LogManager.getLogger(UserManagement.class);
+	private static final Logger log = LogManager.getLogger(AccountingAppFilter.class);
 	
 }
