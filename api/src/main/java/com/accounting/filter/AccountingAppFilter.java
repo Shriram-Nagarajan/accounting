@@ -57,7 +57,7 @@ public class AccountingAppFilter extends OncePerRequestFilter {
 				userThreadLocal.put(accountingUser);
 				filterChain.doFilter(request, response);
 			}	else {
-				if(isSessionRequired(request.getPathInfo())) {
+				if(isSessionRequired(getRequestPath(request))) {
 					response.setStatus(403);
 					response.getWriter().write("User not logged in!");
 					response.getWriter().flush();
@@ -65,7 +65,7 @@ public class AccountingAppFilter extends OncePerRequestFilter {
 			}
 		} catch (ValidationException e) {
 			log.error("ValidationException occurred : ", e);
-			if(isSessionRequired(request.getPathInfo())) {
+			if(isSessionRequired(getRequestPath(request))) {
 				response.setStatus(403);
 				response.getWriter().write(e.getMessage());
 				response.getWriter().flush();
@@ -86,6 +86,11 @@ public class AccountingAppFilter extends OncePerRequestFilter {
 	private boolean isSessionRequired(String path) {
 		return Optional.ofNullable(postLoginUrls).isPresent() ?
 				postLoginUrls.contains(path) : false;
+	}
+	
+	private String getRequestPath(HttpServletRequest request) {
+		return request.getPathInfo() != null && !request.getPathInfo().isBlank()
+				? request.getPathInfo() : (request.getServletPath() != null ? request.getServletPath() : "");
 	}
 
 	private static final Logger log = LogManager.getLogger(AccountingAppFilter.class);
