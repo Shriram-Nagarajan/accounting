@@ -1,6 +1,6 @@
 // SliceModal.jsx
-import React,{useEffect, useState} from 'react';
-import { Modal, Box, Typography,Alert,Button,Snackbar } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Modal, Box, Typography, Alert, Button, Snackbar } from '@mui/material';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell, { tableCellClasses } from '@mui/material/TableCell';
@@ -10,81 +10,83 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import accountingApi from '../httputil/accountingApi';
+import Loader from '../components/Loader';
 
 
 const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 900,
-    maxHeight: 400,  // Set a fixed height for the modal content
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
-    boxShadow: 24,
-    p: 4,
-    overflowY: 'auto', // Enable vertical scrolling
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 900,
+  maxHeight: 400,  // Set a fixed height for the modal content
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+  overflowY: 'auto', // Enable vertical scrolling
 };
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-    [`&.${tableCellClasses.head}`]: {
-      backgroundColor: 'rgb(25, 118, 210)',//backgroundColor: theme.palette.common.black,
-      color: theme.palette.common.white,
-    },
-    [`&.${tableCellClasses.body}`]: {
-      fontSize: 14,
-    },
-  }));
-  
-  const StyledTableRow = styled(TableRow)(({ theme }) => ({
-    '&:nth-of-type(odd)': {
-      backgroundColor: theme.palette.action.hover,
-    },
-    // hide last border
-    '&:last-child td, &:last-child th': {
-      border: 0,
-    },
-  }));
-  
- 
-function ModalPopup({ open, handleClose, data,from,onApiSuccess }) {
-  let index =0;
-  const [alertOpen, setAlertOpen] = useState(false);
-const [alertMessage, setAlertMessage] = useState('');
-const [alertSeverity, setAlertSeverity] = useState('success');
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: 'rgb(25, 118, 210)',//backgroundColor: theme.palette.common.black,
+    color: theme.palette.common.white,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+}));
 
-  const[isPreview,setIsPreview] = useState(false);
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  // hide last border
+  '&:last-child td, &:last-child th': {
+    border: 0,
+  },
+}));
+
+
+function ModalPopup({ open, handleClose, data, from, onApiSuccess }) {
+  let index = 0;
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState('success');
+  const [loading, setLoading] = useState(false);
+
+  const [isPreview, setIsPreview] = useState(false);
   const [sumTotalExpenditure, setSumTotalExpenditure] = useState(0);
- 
+
   useEffect(() => {
     if (from === "einsights") {
       const totalExpenditure = data ? data.map(exp => exp.amount).reduce((acc, val) => acc + val, 0) : 0;
       setSumTotalExpenditure(totalExpenditure);
-    } 
+    }
     else if (from === "efileuploadforpreview") {
       setIsPreview(true);
-      
- 
+
+
     }
   }, [data, from]);
   const handleSaveAllClick = (event) => {
-    if(isPreview)
-      {
-        event.preventDefault();
-    //const fData = data.slice(1);
-    //console.log(fData);
-    const reqData = {
-      "deleteExisting" : false,
-      "expenseList": data,
-  }
-    accountingApi.saveExpenses(reqData, (response) => {
-      showAlert("Expenses saved successfully", "success");
-      onApiSuccess();
-    }, (error) => {
-      showAlert("Error saving expenses", "error");
-    });
+    setLoading(true);
+    if (isPreview) {
+      event.preventDefault();
+      const reqData = {
+        "deleteExisting": false,
+        "expenseList": data,
       }
-    
-  }; 
+      accountingApi.saveExpenses(reqData, (response) => {
+        showAlert("Expenses saved successfully", "success");
+        onApiSuccess();
+        setLoading(false);
+      }, (error) => {
+        showAlert("Error saving expenses", "error");
+        setLoading(false);
+      });
+    }
+
+  };
   const showAlert = (message, severity) => {
     setAlertMessage(message);
     setAlertSeverity(severity);
@@ -94,8 +96,9 @@ const [alertSeverity, setAlertSeverity] = useState('success');
     const d = new Date(date);
     return d.toLocaleDateString('en-GB'); // Adjust the format as needed
   };
-    return (
-        <><Modal
+  return (
+    loading ? <Loader /> : (
+      <><Modal
         open={open}
         onClose={handleClose}
         aria-labelledby="modal-modal-title"
@@ -166,7 +169,8 @@ const [alertSeverity, setAlertSeverity] = useState('success');
             {alertMessage}
           </Alert>
         </Snackbar></>
-    );
+    )
+  );
 }
 
 export default ModalPopup;

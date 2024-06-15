@@ -1,23 +1,18 @@
 // src/SignIn.js
 import React,{useState,useEffect} from 'react';
 import { Routes, Route,useNavigate  } from 'react-router-dom';
+import { Container, Paper, Typography, Grid, Button, Box, AppBar, Toolbar, Snackbar, Alert } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import UAMApi from '../httputil/uam';
-import constants from '../common/constants';
 import { useDispatch } from 'react-redux';
 import {  loginSuccess } from '../actions/authActions';
+import Loader from '../components/Loader';
+
 const theme = createTheme();
 
 function Copyright(props) {
@@ -37,37 +32,69 @@ function Copyright(props) {
 function PreLogin() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [isforLogin,setIsForLogin] = useState(false);
-  const [isforRegister,setisforRegister] = useState(false);
-  const [isforForgotpwd,setisforForgotpwd] = useState(false);
+  const [isforLogin,setIsForLogin] = useState(true);
+  const [isforRegister,setIsForRegister] = useState(false);
+  const [isforForgotpwd,setIsForForgotPwd] = useState(false);
+  const [showVerifyOTPSignUpDetails, setShowVerifyOTPSignUpDetails] = useState(false);
+  const [showRegisterForm,setShowRegisterForm] = useState(true);
+  const [formErrors, setFormErrors] = useState({});
   const [loginInputs,setLoginInputs] = useState({
     "userId" : "",
     "password" : "",
   })
   const [registerInputs,setRegisterInputs] = useState({
-    "userId" : "",
+    "fullName" : "",
+    "email" : "",
     "password" : "",
   })
   const [forgotpwdInputs,setforgotpwdInputs] = useState({
     "userId" : "",
     "password" : "",
   })
+  const [loading, setLoading] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState('success');
+
   useEffect(() => {
       // Simulate a login for testing purposes
       //setIsForLogin(true);
-      setisforRegister(false);
-      setisforForgotpwd(false);
+      // setisforRegister(false);
+      // setisforForgotpwd(false);
       navigate("/");
-  }, []);   
-  const handleRegisterSubmit = (event) => {
+  }, []); 
+  const showAlert = (message, severity) => {
+    setAlertMessage(message);
+    setAlertSeverity(severity);
+    setAlertOpen(true);
+  };  
+  const handleSendOTPCall = (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    console.log({
-      firstName: data.get('firstName'),
-      lastName: data.get('lastName'),
-      email: data.get('email'),
-      password: data.get('password'),
-    });
+    setLoading(true);
+    // const data = new FormData(event.currentTarget);
+    // console.log({
+    //   fullName: data.get('fullName'),
+    //   email: data.get('email'),
+    //   password: data.get('password'),
+    // });
+    UAMApi.registerUser(registerInputs,(response) =>
+    {
+      console.log(response);
+      if(response)
+        {
+          setShowVerifyOTPSignUpDetails(true);
+          setShowRegisterForm(false);
+        }
+
+    },
+  (error)=>
+  {
+    console.log(error);
+    setLoading(false);
+    setShowVerifyOTPSignUpDetails(false);
+    setShowRegisterForm(true);
+
+  })
   };
     const handleForgotPasswordSubmit = (event) => {
       event.preventDefault();
@@ -78,29 +105,122 @@ function PreLogin() {
     };
   const handleLoginSubmit = (event) => {
     event.preventDefault();
+    setLoading(true);
+    validateLoginForm(loginInputs);
+    const isEmpty = Object.values(loginInputs).some(value =>
+      (typeof value === 'string' && value.trim() === '') ||
+      value === null ||
+      value === undefined
+    );
+    const errors = validateLoginForm(loginInputs);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setLoading(false);
+
+    }
+    else if (isEmpty) {
+      showAlert("All fields are mandatory", "error");
+      setLoading(false);
+
+    }
+    else
+    {
     UAMApi.loginUser(loginInputs, (response) => {
       console.log(response)
       if(response.data.user)
       {
         dispatch(loginSuccess(response.data.user.name));
         navigate("/home");
+        setLoading(false);
       }
 
     }, (error) => {
-      console.log(error)
+      console.log(error);
+      setLoading(false);
     })
+  }
+  };
+  const handleSwitchToRegister = () => {
+    setIsForLogin(false);
+    setIsForRegister(true);
+    setIsForForgotPwd(false);
+  };
+
+  const handleSwitchToForgotPwd = () => {
+    setIsForLogin(false);
+    setIsForRegister(false);
+    setIsForForgotPwd(true);
+  };
+
+  const handleSwitchToLogin = () => {
+    setIsForLogin(true);
+    setIsForRegister(false);
+    setIsForForgotPwd(false);
+  };
+  const clearError = (field) => {
+    console.log(formErrors)
+    setFormErrors((prevErrors) => ({ ...prevErrors, [field]: '' }));
+  };
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
   const handleLoginInputChange = (e) => {
     const { name, value } = e.target;
     setLoginInputs({ ...loginInputs, [name]: value });
+    clearError(name);
+  };
+  const handleRegisterInputChange = (e) => {
+    const { name, value } = e.target;
+    setLoginInputs({ ...loginInputs, [name]: value });
+    clearError(name);
+
+    if (name === 'email' && !validateEmail(value)) {
+      setFormErrors({ ...formErrors, email: 'Enter a valid email' });
+
+    } else {
+      setFormErrors({ ...formErrors, email: '' });
+      clearError('email');
+
+    }
+  };
+  const handleForgotPwdInputChange = (e) => {
+    const { name, value } = e.target;
+    setLoginInputs({ ...loginInputs, [name]: value });
+    clearError(name);
+
+    if (name === 'email' && !validateEmail(value)) {
+      setFormErrors({ ...formErrors, email: 'Enter a valid email' });
+    } else {
+      setFormErrors({ ...formErrors, email: '' });
+      clearError("email");
+
+    }
+  };
+  const validateLoginForm = (data) => {
+    const errors = {};
+    const scriptTagPattern = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+
+    if (!data.userId ) {
+      errors.userId = 'This field is required';
+    }
+    if (!data.password) {
+      errors.password = 'Password is required';
+    } else if (scriptTagPattern.test(data.password)) {
+      errors.category = 'Password must not contain script tags';
+    }
+    
+    return errors;
   };
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
+        
+        {loading ? <Loader />:(<>
         {/* <Box component="main"></Box> */}
         {/* LOGIN PAGE STARTS */}
-        <Box
+        {isforLogin && <Box
           sx={{
             marginTop: 8,
             display: 'flex',
@@ -120,11 +240,13 @@ function PreLogin() {
               required
               fullWidth
               id="userId"
-              label="UserID"
+              label="UserID/Email"
               name="userId"
               autoComplete="userId"
               autoFocus
               onChange={handleLoginInputChange}
+              error={!!formErrors.userId}
+              helperText={formErrors.userId}
             />
             <TextField
               margin="normal"
@@ -136,6 +258,8 @@ function PreLogin() {
               id="password"
               autoComplete="current-password"
               onChange={handleLoginInputChange}
+              error={!!formErrors.password}
+              helperText={formErrors.password}
 
             />
             {/* <FormControlLabel
@@ -152,18 +276,18 @@ function PreLogin() {
             </Button>
             <Grid container>
               <Grid item xs>
-                <Link href="#" variant="body2">
+                <Link href="#" variant="body2" onClick ={handleSwitchToForgotPwd}>
                   Forgot password?
                 </Link>
               </Grid>
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="#" variant="body2" onClick={handleSwitchToRegister}>
                   {"Don't have an account? Sign Up"}
                 </Link>
               </Grid>
             </Grid>
           </Box>
-        </Box>
+        </Box>}
         {/* LOGIN PAGE ENDS */}
         {/* REGISTRATION PAGE STARTS */}
         {isforRegister && <Box
@@ -180,37 +304,37 @@ function PreLogin() {
           <Typography component="h1" variant="h5">
             Sign up
           </Typography>
-          <Box component="form" noValidate onSubmit={handleRegisterSubmit} sx={{ mt: 3 }}>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6}>
+          <Box component="form" noValidate sx={{ mt: 3 }}>
+          {showRegisterForm &&<Grid container spacing={2}>
+              <Grid item xs={12}>
                 <TextField
                   autoComplete="given-name"
-                  name="firstName"
+                  name="fullName"
                   required
                   fullWidth
-                  id="firstName"
-                  label="First Name"
+                  id="fullName"
+                  label="Full Name"
                   autoFocus
+                  onChange={handleRegisterInputChange}
+                  error={!!formErrors.fullName}
+                  helperText={formErrors.fullName}
+
+                  
                 />
               </Grid>
-              <Grid item xs={12} sm={6}>
-                <TextField
-                  required
-                  fullWidth
-                  id="lastName"
-                  label="Last Name"
-                  name="lastName"
-                  autoComplete="family-name"
-                />
-              </Grid>
+             
               <Grid item xs={12}>
                 <TextField
                   required
                   fullWidth
                   id="email"
-                  label="email Address"
+                  label="Email Address"
                   name="email"
                   autoComplete="email"
+                  error={!!formErrors.email}
+                  helperText={formErrors.email}
+                  onChange={handleRegisterInputChange}
+                  
                 />
               </Grid>
               <Grid item xs={12}>
@@ -222,20 +346,41 @@ function PreLogin() {
                   type="password"
                   id="password"
                   autoComplete="new-password"
+                  onChange={handleRegisterInputChange}
+                  error={!!formErrors.password}
+                  helperText={formErrors.password}
+
+                  
                 />
               </Grid>
-            </Grid>
-            <Button
-              type="submit"
+            </Grid>}
+            {showRegisterForm &&<Button
+              type="button"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            onClick={handleSendOTPCall}>
+              Send OTP
+            </Button>}
+            {showVerifyOTPSignUpDetails && <Button
+              type="button"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            >
+              Verify OTP
+            </Button>}
+            {showVerifyOTPSignUpDetails && <Button
+              type="button"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
               Sign Up
-            </Button>
+            </Button>}
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="#" variant="body2">
+                <Link href="#" variant="body2" onClick={handleSwitchToLogin}>
                   Already have an account? Sign in
                 </Link>
               </Grid>
@@ -268,6 +413,9 @@ function PreLogin() {
               name="email"
               autoComplete="email"
               autoFocus
+              error={!!formErrors.email}
+              helperText={formErrors.email}
+              onChange={handleForgotPwdInputChange}
             />
             <Button
               type="submit"
@@ -281,6 +429,12 @@ function PreLogin() {
         </Box>}
         {/* FORGOT PASSWORD PAGE ENDS */}
         <Copyright sx={{ mt: 8, mb: 4 }} />
+        <Snackbar open={alertOpen} autoHideDuration={6000} onClose={() => setAlertOpen(false)}>
+        <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: '100%' }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
+      </>)}
       </Container>
     </ThemeProvider>
   );

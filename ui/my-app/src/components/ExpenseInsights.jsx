@@ -8,25 +8,9 @@ import ModalPopup from '../components/Modal';
 import { Container, Paper, Typography, Grid, Button, Box, AppBar, Toolbar, Snackbar, Alert } from '@mui/material';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, Title } from 'chart.js';
 import dayjs from 'dayjs';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import CircularProgress from '@mui/material/CircularProgress';
-import MoneyAnimation from "./MoneyAnimation";
-// import { makeStyles } from '@mui/styles';
+import Loader from '../components/Loader';
+
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
-// const useStyles = makeStyles((theme) => ({
-//   loaderContainer: {
-//     position: 'fixed',
-//     top: '0',
-//     left: '0',
-//     width: '100%',
-//     height: '100%',
-//     display: 'flex',
-//     justifyContent: 'center',
-//     alignItems: 'center',
-//     backgroundColor: 'rgba(255, 255, 255, 0.7)', // semi-transparent background
-//     zIndex: '9999', // ensure it's above other elements
-//   },
-// }));
 
 function ExpenseInsights()
 {
@@ -41,7 +25,6 @@ function ExpenseInsights()
     const [alertMessage, setAlertMessage] = useState('');
     const [alertSeverity, setAlertSeverity] = useState('success');
     const [loading, setLoading] = useState(false);
-    //const classes = useStyles();
     const handleFromDateChange = (newValue) => {
         setFromDate(newValue);
       };
@@ -61,16 +44,19 @@ function ExpenseInsights()
     
     const handleSubmit = (event) => {
         event.preventDefault();
+        setLoading(true);
         let data = { fromDate: fromDate.format('YYYY-MM-DD'), toDate: toDate.format('YYYY-MM-DD') };
         accountingApi.getCategoryWiseExpenses(data, (response) => {
           setExpenses(response.data);
           setDataPresent(true);
           setPieTitle("Expenditure for the period of " + fromDate.format('YYYY-MM-DD') + " to " + toDate.format('YYYY-MM-DD'));
           console.log(response.data);
+          setLoading(false);
         }, (error) => {
-          console.error("Error fetching expenses", error);
+          console.error("Error fetching category wise expenses", error);
           setDataPresent(false);
-          showAlert('Error fetching expenses','error');
+          showAlert('Error fetching category wise expenses','error');
+           setLoading(false);
         });
       };
     
@@ -109,18 +95,10 @@ function ExpenseInsights()
         ]
       };
     return(
+     
         <Container >
-          {/* <div className={classes.loaderContainer}>
-      <CircularProgress />
-    </div> */}
-            {/* <AppBar position="static">
-        <Toolbar>
-          <AccountBalanceIcon sx={{ mr: 2 }} />
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Expense Insights
-          </Typography>
-        </Toolbar>
-      </AppBar> */}
+           {loading ? (<Loader />) :(
+            <>
         <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
         <Typography variant="h4" gutterBottom>
           Expense Insights
@@ -160,9 +138,11 @@ function ExpenseInsights()
         <Alert onClose={() => setAlertOpen(false)} severity={alertSeverity} sx={{ width: '100%' }}>
           {alertMessage}
         </Alert>
-      </Snackbar>
-
+      </Snackbar></>
+           )
+           }
       </Container>
+      
     );
 }
 

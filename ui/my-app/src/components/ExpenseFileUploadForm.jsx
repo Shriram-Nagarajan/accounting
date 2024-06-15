@@ -12,8 +12,19 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import dayjs from 'dayjs';
 import ModalPopupforIncomePreview from './IncomePreviewModal';
-
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { addDefaultCategory } from '../actions/categoryActions';
+import Loader from '../components/Loader';
+import { addExpense,resetExpenses} from '../actions/expenseActions';
+import { addIncome,resetIncome } from '../actions/incomeActions';
 function ExpenseFileUploadForm() {
+  const dispatch = useDispatch();
+  const defaultCategories= useSelector(state => state.category.defaultCategories);
+  const categoriesLoaded = useSelector(state => state.category.categoriesLoaded);
+  const expensesInPreview = useSelector(state => state.expenses);
+  const incomeInPreview = useSelector(state => state.income);
+  console.log(expensesInPreview.expenses.length);
   const [expenseTableOpen, setExpenseTableOpen] = useState(false);
   const [incomeTableOpen, setIncomeTableOpen] = useState(false);
 
@@ -62,43 +73,65 @@ function ExpenseFileUploadForm() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
-  const [categories, setCategories] = useState(['grocery', 'misc', 'emi', 'food order', 'medical']);
+  const [categories, setCategories] = useState([]);//useState(['grocery', 'misc', 'emi', 'food order', 'medical']);
   const [categorySuggestions, setCategorySuggestions] = useState([]);//'insurance', 'householditems', 'utility bills', 'service']
   const [newCategory, setNewCategory] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [formErrors, setFormErrors] = useState({});
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
-    const getDefaultCategories = () => {
-      accountingApi.getDefaultCategories('', (response) => {
-        console.log(response.data);
-        setCategorySuggestions(response.data.map(x => x.categoryName));
-        console.log(categorySuggestions)
-      }, (error) => {
-        console.error("Error fetching expenses", error);
-      });
+    if (!categoriesLoaded) {
+      const getDefaultCategories = () => {
+          setLoading(true);
+          accountingApi.getDefaultCategories('', (response) => {
+              const categoryNames = response.data.map(x => x.categoryName);
+              dispatch(addDefaultCategory(categoryNames));
+              setLoading(false);
+          }, (error) => {
+              console.error("Error fetching expenses", error);
+              setLoading(false);
+          });
+      };
+      const getUserCategories = () => {
+        setLoading(true);
+        accountingApi.getUserCategories('', (response) => {
+            const categoryNames = response.data.map(x => x.categoryName);
+            // dispatch(addDefaultCategory(categoryNames));
+            setCategories(categoryNames);
+            setLoading(false);
+        }, (error) => {
+            console.error("Error fetching expenses", error);
+            setLoading(false);
+        });
     };
-  
-  //   // Hardcoding the initial categories and suggestions
-  //   const acategories = ['grocery', 'misc', 'emi', 'food order', 'medical'];
-  //   const asuggestions = ['insurance', 'householditems', 'utility bills', 'service'];
-  //   setCategories(acategories);
-  //   setCategorySuggestions(asuggestions);
-
-  //   // If using API:
-  //   // const fetchCategoriesAndSuggestions = async () => {
-  //   //   try {
-  //   //     const categoriesResponse = await axios.get('https://api.example.com/categories'); // Replace with your API endpoint
-  //   //     const suggestionsResponse = await axios.get('https://api.example.com/category-suggestions'); // Replace with your API endpoint
-
-  //   //     setCategories(categoriesResponse.data);
-  //   //     setCategorySuggestions(suggestionsResponse.data);
-  //   //   } catch (error) {
-  //   //     console.error('Error fetching data:', error);
-  //   //   }
-  //   // };
-
     getDefaultCategories();
-  }, []);
+      getUserCategories();
+    }
+    }, );
+  useEffect(() => {
+    setCategorySuggestions(defaultCategories);
+  }, [defaultCategories]);
+  useEffect (()=>
+  {
+    if(expensesInPreview != null || expensesInPreview != undefined || expensesInPreview.expenses.length > 0)
+      {
+        setExpenseFromUser(expensesInPreview.expenses);
+        setExpenseCount(expensesInPreview.expenses.length);
+        console.log(expenseFromUser);
+      }
+    if(incomeInPreview != null || incomeInPreview != undefined || incomeInPreview.income.length >0)
+      {
+        setIncomeFromUser(incomeInPreview.income);
+        setIncomeCount(incomeInPreview.income.length);
+        console.log(incomeFromUser);
+      }
+  })
+
+  const clearError = (field) => {
+    console.log(formErrors)
+    setFormErrors((prevErrors) => ({ ...prevErrors, [field]: '' }));
+  };
+
   const showAlert = (message, severity) => {
     setAlertMessage(message);
     setAlertSeverity(severity);
@@ -117,6 +150,7 @@ function ExpenseFileUploadForm() {
     document.body.removeChild(link);
   };
   const handleFileSubmit = (event) => {
+    setLoading(true);
     event.preventDefault();
     if (selectedFile) {
       const formData = new FormData();
@@ -126,36 +160,41 @@ function ExpenseFileUploadForm() {
       accountingApi.uploadExpensesFile(formData, (response) => {
         setUploadStatus(response.data?.message);
         showAlert("File uploaded successfully", "success");
-
+        setLoading(false);
       }, (error) => {
         setUploadStatus("Error occurred:" + error);
         showAlert("Error uploading", "error");
-
+        setLoading(false);
       })
     } else {
       console.log('No file selected');
+      setLoading(false);
     }
   };
   const handleExpenseInputChange = (e) => {
     if (e.target) {
       const { name, value } = e.target;
       setExpenseFormData({ ...ExpenseFormData, [name]: value });
+      clearError(name); // Clear error for this field
   } 
   else if (e) {
       // Adjust this based on actual structure of e.value
       let formattedDate = e.format('YYYY-MM-DD');
       setExpenseFormData({ ...ExpenseFormData, date: formattedDate });
+      clearError('date'); // Clear error for date field
   } 
   };
   const handleIncomeInputChange = (e) => {
     if (e.target) {
       const { name, value } = e.target;
       setIncomeFormData({ ...IncomeFormData, [name]: value });
+      clearError(name); // Clear error for this field
   } 
   else if (e) {
       // Adjust this based on actual structure of e.value
       let formattedDate = e.format('YYYY-MM-DD');
       setIncomeFormData({ ...IncomeFormData, date: formattedDate });
+      clearError('date'); // Clear error for date field
   }  
 };
 
@@ -166,6 +205,7 @@ function ExpenseFileUploadForm() {
     setSelectedCategory(event.target.value);
     const { name, value } = event.target;
     setExpenseFormData({ ...ExpenseFormData, [name]: value });
+    clearError('category');
 
   };
 
@@ -203,6 +243,7 @@ function ExpenseFileUploadForm() {
       showAlert("Date,Description,Amount. Please fill out.", "error")
     }
     else {
+      dispatch(addExpense(ExpenseFormData));
       setExpenseFromUser([...expenseFromUser, ExpenseFormData]);
       setExpenseFormData({
         date: dayjs(),
@@ -216,12 +257,33 @@ function ExpenseFileUploadForm() {
       setExpenseCount(ExpenseCount + 1);
       showAlert("Expense added", "success");
       console.log(expenseFromUser)
+      setFormErrors({}); // Clear
     }
   };
   const handlePreviewExpenseClick = () => {
-    const fData = expenseFromUser.slice(1);
-    setExpensePreviewData(fData);
-    setExpenseTableOpen(true);
+    console.log(expenseFromUser);
+    console.log(expenseFromUser.length);
+
+    if((expenseFromUser.length === 1 && expenseFromUser[0].amount == "" && expenseFromUser[0].description===""&& expenseFromUser[0].category==="")|| expenseFromUser.length === 0)
+      {
+        showAlert("No expenses added to preview",'warning');
+      }
+      else
+      {
+        if((expenseFromUser.length > 1 && expenseFromUser[0].amount == "" && expenseFromUser[0].description===""&& expenseFromUser[0].category==="")|| expenseFromUser.length === 0)
+          {
+    
+        const fData = expenseFromUser.slice(1);
+        setExpensePreviewData(fData);
+        setExpenseTableOpen(true);
+          }
+          else
+          {
+            setExpensePreviewData(expenseFromUser);
+            setExpenseTableOpen(true);
+    
+          }
+      }
 
   }
   const handleAddIncomeClick = () => {
@@ -239,6 +301,7 @@ function ExpenseFileUploadForm() {
       showAlert("Date,Description,Amount,Category are mandatory. Please fill out.", "error")
     }
     else {
+      dispatch(addIncome(IncomeFormData));
       setIncomeFromUser([...incomeFromUser, IncomeFormData]);
       setIncomeFormData({
         date: dayjs(),
@@ -251,12 +314,33 @@ function ExpenseFileUploadForm() {
       setIncomeCount(IncomeCount + 1);
       showAlert("Income added", "success");
       console.log(incomeFromUser)
+      setFormErrors({}); // Clear
+
     }
   };
   const handlePreviewIncomeClick = () => {
-    const fData = incomeFromUser.slice(1);
-    setIncomePreviewData(fData);
-    setIncomeTableOpen(true);
+    if((incomeFromUser.length === 1 && incomeFromUser[0].amount == "" && incomeFromUser[0].description==="")|| incomeFromUser.length === 0)
+      {
+        showAlert("No income added to preview",'warning');
+      }
+      else
+      {
+
+        if((incomeFromUser.length > 1 && incomeFromUser[0].amount == "" && incomeFromUser[0].description==="")|| incomeFromUser.length === 0)
+          {
+    
+        const fData = incomeFromUser.slice(1);
+        setIncomePreviewData(fData);
+        setIncomeTableOpen(true);
+          }
+          else
+          {
+            setIncomePreviewData(incomeFromUser);
+            setIncomeTableOpen(true);
+    
+          }
+    
+      }
 
   }
   const handleExpenseTableClose = () => {
@@ -280,6 +364,8 @@ function ExpenseFileUploadForm() {
         });
         setSelectedCategory('');
         setExpenseCount(0);
+        dispatch(resetExpenses());
+
       }
       if(incomeFromUser != null)
         {
@@ -294,6 +380,8 @@ function ExpenseFileUploadForm() {
         
               });
           setIncomeCount(0);
+          dispatch(resetIncome());
+
 
         }
     
@@ -352,8 +440,10 @@ function ExpenseFileUploadForm() {
   };
 
   return (
+
     <Container>
-      <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
+      {loading ? <Loader /> :(<>
+        <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
         <Box
           sx={{
             flexGrow: 1,
@@ -664,7 +754,8 @@ function ExpenseFileUploadForm() {
         </Alert>
       </Snackbar>
       <ModalPopup open={expenseTableOpen} handleClose={handleExpenseTableClose} data={expensepreviewData} from="efileuploadforpreview" onApiSuccess={handleSaveAPISuccess} />
-      <ModalPopupforIncomePreview open={incomeTableOpen} handleClose={handleIncomeTableClose} data={incomepreviewData} onSaveIncomeApiSuccess={handleSaveAPISuccess}/>
+      <ModalPopupforIncomePreview open={incomeTableOpen} handleClose={handleIncomeTableClose} data={incomepreviewData} onSaveIncomeApiSuccess={handleSaveAPISuccess}/></>)
+}
     </Container>
 
 
