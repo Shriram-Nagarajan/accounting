@@ -11,9 +11,14 @@ const loginUser = (formData, onSuccess, onError) => {
 const getSession = (parameters, onSuccess, onError) => {
     http.get(getDomainUrl() + "get-session", parameters, onSuccess, onError);
 }
+
+const logoutUser = (parameters, onSuccess, onError) => {
+    http.get(getDomainUrl() + "logout", parameters, onSuccess, onError);
+}
 const UAMApi = {
     loginUser,
     getSession,
+    logoutUser,
    
 }
 

@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import DateRangePickerComponent from "../components/DateRangePicker";
 import { Container, Paper, Typography, Grid, Button, Box, AppBar, Toolbar, Snackbar, Alert } from '@mui/material';
 import accountingApi from '../httputil/accountingApi';
+import Loader from '../components/Loader';
 
 function Income() {
   const [income, setIncome] = useState([]);
@@ -14,18 +15,22 @@ function Income() {
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    setLoading(true);
     let data = { fromDate: fromDate.format('YYYY-MM-DD'), toDate: toDate.format('YYYY-MM-DD') };
     accountingApi.getIncome(data, (response) => {
       setIncome(response.data);
       setDataPresent(true);
       console.log(response.data);
+      setLoading(false);
     }, (error) => {
       console.error("Error fetching income", error);
       setDataPresent(false);
       showAlert('Error fetching income','error');
+      setLoading(false);
     });
   };
   const handleFromDateChange = (newValue) => {
@@ -42,6 +47,8 @@ function Income() {
   };
   return (
     <Container >
+      {loading ? (<Loader />) :(
+            <>
         <Paper elevation={3} sx={{ p: 3, mt: 3 }}>
         <Typography variant="h4" gutterBottom>
           Income Insights
@@ -82,10 +89,13 @@ function Income() {
           {alertMessage}
         </Alert>
       </Snackbar>
-      <div >
+      {/* <div > */}
       <MoneyAnimation />
       {/* Your other app content */}
-    </div>
+    {/* </div> */}
+    </>
+  )
+  }
       </Container>
     
   );

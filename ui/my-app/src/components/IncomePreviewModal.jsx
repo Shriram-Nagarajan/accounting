@@ -10,6 +10,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { styled } from '@mui/material/styles';
 import accountingApi from '../httputil/accountingApi';
+import Loader from '../components/Loader';
 
 
 const style = {
@@ -49,8 +50,9 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 function ModalPopupforIncomePreview({ open, handleClose, data,onSaveIncomeApiSuccess }) {
   let index =0;
   const [alertOpen, setAlertOpen] = useState(false);
-const [alertMessage, setAlertMessage] = useState('');
-const [alertSeverity, setAlertSeverity] = useState('success');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState('success');
+  const [loading, setLoading] = useState(false);
 
   const[isPreview,setIsPreview] = useState(false);
   const [sumTotalExpenditure, setSumTotalExpenditure] = useState(0);
@@ -63,11 +65,8 @@ const [alertSeverity, setAlertSeverity] = useState('success');
   // }, [data]);
      
   const handleSaveAllClick = (event) => {
-    // if(isPreview)
-    //   {
         event.preventDefault();
-    // const fData = data.slice(1);
-    // console.log(fData);
+    setLoading(true);
     const reqData = {
       "deleteExisting" : false,
       "incomeDetails": data,
@@ -75,10 +74,11 @@ const [alertSeverity, setAlertSeverity] = useState('success');
     accountingApi.saveIncome(reqData, (response) => {
       showAlert("Income saved successfully", "success");
       onSaveIncomeApiSuccess();
+      setLoading(false);
     }, (error) => {
-      showAlert("Error saving expenses", "error");
+      showAlert("Error saving income", "error");
+      setLoading(false);
     });
-      // }
     
   }; 
   const showAlert = (message, severity) => {
@@ -91,6 +91,7 @@ const [alertSeverity, setAlertSeverity] = useState('success');
     return d.toLocaleDateString('en-GB'); // Adjust the format as needed
   };
     return (
+      loading?<Loader /> :(
         <><Modal
         open={open}
         onClose={handleClose}
@@ -158,6 +159,7 @@ const [alertSeverity, setAlertSeverity] = useState('success');
             {alertMessage}
           </Alert>
         </Snackbar></>
+        )
     );
 }
 
