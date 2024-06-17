@@ -3,6 +3,7 @@ package com.um.model;
 public class ApiResponse {
 	
 	public static final String SUCCESS = "SUCCESS";
+	public static final String REQD_PARAMS_NOT_PROVIDED = "REQD_PARAMS_NOT_PROVIDED";
 	
 	private int statusCode;
 	private String message;

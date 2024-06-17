@@ -26,12 +26,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 @RestController
-public class UserController {
+public class LoginLogoutController {
 
 	private LoginLogoutHandler loginLogoutHandler;
 	private UserSessionHandler sessionHandler;
 	
-	public UserController(LoginLogoutHandler loginLogoutHandler, UserSessionHandler userSessionHandler) throws IOException {
+	public LoginLogoutController(LoginLogoutHandler loginLogoutHandler, UserSessionHandler userSessionHandler) throws IOException {
 		this.loginLogoutHandler = loginLogoutHandler;
 		sessionHandler = userSessionHandler;
 	}
@@ -71,6 +71,6 @@ public class UserController {
 		return ResponseEntity.ok().body(new ApiResponse(200, ApiResponse.SUCCESS));
 	}
 	
-	private static final Logger log = LogManager.getLogger(UserController.class);
+	private static final Logger log = LogManager.getLogger(LoginLogoutController.class);
 	
 }
