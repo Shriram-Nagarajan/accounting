@@ -1,5 +1,5 @@
 // src/SignIn.js
-import React,{useState,useEffect} from 'react';
+import React,{useState,useEffect,useRef} from 'react';
 import { Routes, Route,useNavigate  } from 'react-router-dom';
 import { Container, Paper, Typography, Grid, Button, Box, AppBar, Toolbar, Snackbar, Alert } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
@@ -30,32 +30,46 @@ function Copyright(props) {
 }
 
 function PreLogin() {
+  //common
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const [isforLogin,setIsForLogin] = useState(true);
-  const [isforRegister,setIsForRegister] = useState(false);
-  const [isforForgotpwd,setIsForForgotPwd] = useState(false);
-  const [showVerifyOTPSignUpDetails, setShowVerifyOTPSignUpDetails] = useState(false);
-  const [showRegisterForm,setShowRegisterForm] = useState(true);
   const [formErrors, setFormErrors] = useState({});
-  const [loginInputs,setLoginInputs] = useState({
-    "userId" : "",
-    "password" : "",
-  })
-  const [registerInputs,setRegisterInputs] = useState({
-    "fullName" : "",
-    "email" : "",
-    "password" : "",
-  })
-  const [forgotpwdInputs,setforgotpwdInputs] = useState({
-    "userId" : "",
-    "password" : "",
-  })
+  const [email,setEmail] = useState('');
+  const [emailError,setEmailError] = useState('');
+  const [otp, setOtp] = useState(Array(6).fill(''));
+  const [otpErrors, setOtpErrors] = useState(Array(6).fill(false));  
+  const inputRefs = useRef([]);
   const [loading, setLoading] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
 
+  //related to login
+  const [isforLogin,setIsForLogin] = useState(true);
+  const [loginInputs,setLoginInputs] = useState({
+    "userId" : "",
+    "password" : "",
+  })
+  //related to register
+  const [isforRegister,setIsForRegister] = useState(false);
+  const [showVerifyOTPSignUpDetails, setShowVerifyOTPSignUpDetails] = useState(false); 
+  const [showEmailForRegisterForm, setShowEmailForRegisterForm] = useState(true);
+  const [showRegisterForm,setShowRegisterForm] = useState(false);
+  const [registerInputs,setRegisterInputs] = useState({
+    "fullName" : "",
+    "password" : "",
+  })
+
+  //related to forgot password
+  const [isforForgotpwd,setIsForForgotPwd] = useState(false);
+  const [showEmailForForgotPwdForm, setShowEmailForForgotPwdForm] = useState(true);
+  const [showVerifyOTPPwdResetDetails, setShowVerifyOTPPwdResetDetails] = useState(false);
+  const [showResetPwdForm, setShowResetPwdForm] = useState(false);
+  const [forgotpwdInputs,setforgotpwdInputs] = useState({
+    "password" : "",
+    "confirmPassword" : "",
+  })
+  
   useEffect(() => {
       // Simulate a login for testing purposes
       //setIsForLogin(true);
@@ -63,46 +77,80 @@ function PreLogin() {
       // setisforForgotpwd(false);
       navigate("/");
   }, []); 
+  //common methods
   const showAlert = (message, severity) => {
     setAlertMessage(message);
     setAlertSeverity(severity);
     setAlertOpen(true);
   };  
-  const handleSendOTPCall = (event) => {
-    event.preventDefault();
-    setLoading(true);
-    // const data = new FormData(event.currentTarget);
-    // console.log({
-    //   fullName: data.get('fullName'),
-    //   email: data.get('email'),
-    //   password: data.get('password'),
-    // });
-    UAMApi.registerUser(registerInputs,(response) =>
-    {
-      console.log(response);
-      if(response)
-        {
-          setShowVerifyOTPSignUpDetails(true);
-          setShowRegisterForm(false);
-        }
-
-    },
-  (error)=>
-  {
-    console.log(error);
-    setLoading(false);
-    setShowVerifyOTPSignUpDetails(false);
-    setShowRegisterForm(true);
-
-  })
+  const clearError = (field) => {
+    console.log(formErrors)
+    setFormErrors((prevErrors) => ({ ...prevErrors, [field]: '' }));
   };
-    const handleForgotPasswordSubmit = (event) => {
-      event.preventDefault();
-      const data = new FormData(event.currentTarget);
-      console.log({
-        email: data.get('email'),
-      });
-    };
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+  const validateOtp = (otp) => {
+    const otpRegex = /^\d{6}$/;
+    return otpRegex.test(otp);
+  };
+    // const handleOtpChange = (e) => {
+  //   const value = e.target.value;
+  //   setOtp(value);
+  //   if (!validateOtp(value)) {
+  //     setOtpError('Enter a valid 6-digit OTP');
+  //   } else {
+  //     setOtpError('');
+  //   }
+  // };
+  // const handleotpChange = (element, index) => {
+  //   const value = element.value;
+  //   const newOtp = [...otp];
+  //   const newErrors = [...errors];
+
+  //   if (/[^0-9]/.test(value)) {
+  //     newErrors[index] = true;
+  //   } else {
+  //     newErrors[index] = false;
+  //   }
+
+  //   newOtp[index] = value;
+  //   setOtp(newOtp);
+  //   setErrors(newErrors);
+
+  //   // Focus next input box if current input is valid and not empty
+  //   if (value && !newErrors[index] && element.nextSibling) {
+  //     element.nextSibling.focus();
+  //   }
+  // };
+
+  const handleOTPChange = (element, index) => {
+    const value = element.value;
+    if (/[^0-9]/.test(value)) {
+      return; // Only allow numeric input
+    }
+    
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    // Focus next input box
+    // if (value && element.nextSibling) {
+    //   element.nextSibling.focus();
+    // }
+    if (value && index < 5) {
+      inputRefs.current[index + 1].focus();
+    }
+  };
+  const handleKeyDown = (event, index) => {
+    if (event.key === 'Backspace' && !otp[index]) {
+      if (index > 0) {
+        inputRefs.current[index - 1].focus();
+      }
+    }
+  };
+  //login page related methods
   const handleLoginSubmit = (event) => {
     event.preventDefault();
     setLoading(true);
@@ -133,69 +181,33 @@ function PreLogin() {
         navigate("/home");
         setLoading(false);
       }
+      
 
-    }, (error) => {
-      console.log(error);
+    }, (errorResponse) => {
+      console.log(errorResponse);
       setLoading(false);
-    })
-  }
+      if(errorResponse.response.data.message == "PASSWORD_INCORRECT")
+        {
+          showAlert("Incorrect password. Login with correct credentials","error");
+          
+        } 
+      else if(errorResponse.response.data.message == "USERID_INCORRECT")
+          {
+            showAlert("Incorrect userid. Login with correct credentials","error");
+            
+          } 
+        
+        })}
   };
-  const handleSwitchToRegister = () => {
-    setIsForLogin(false);
-    setIsForRegister(true);
-    setIsForForgotPwd(false);
-  };
-
-  const handleSwitchToForgotPwd = () => {
-    setIsForLogin(false);
-    setIsForRegister(false);
-    setIsForForgotPwd(true);
-  };
-
   const handleSwitchToLogin = () => {
     setIsForLogin(true);
     setIsForRegister(false);
     setIsForForgotPwd(false);
   };
-  const clearError = (field) => {
-    console.log(formErrors)
-    setFormErrors((prevErrors) => ({ ...prevErrors, [field]: '' }));
-  };
-  const validateEmail = (email) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
   const handleLoginInputChange = (e) => {
     const { name, value } = e.target;
     setLoginInputs({ ...loginInputs, [name]: value });
     clearError(name);
-  };
-  const handleRegisterInputChange = (e) => {
-    const { name, value } = e.target;
-    setLoginInputs({ ...loginInputs, [name]: value });
-    clearError(name);
-
-    if (name === 'email' && !validateEmail(value)) {
-      setFormErrors({ ...formErrors, email: 'Enter a valid email' });
-
-    } else {
-      setFormErrors({ ...formErrors, email: '' });
-      clearError('email');
-
-    }
-  };
-  const handleForgotPwdInputChange = (e) => {
-    const { name, value } = e.target;
-    setLoginInputs({ ...loginInputs, [name]: value });
-    clearError(name);
-
-    if (name === 'email' && !validateEmail(value)) {
-      setFormErrors({ ...formErrors, email: 'Enter a valid email' });
-    } else {
-      setFormErrors({ ...formErrors, email: '' });
-      clearError("email");
-
-    }
   };
   const validateLoginForm = (data) => {
     const errors = {};
@@ -212,6 +224,398 @@ function PreLogin() {
     
     return errors;
   };
+  //register page related methods  
+  const handleSendOTPCall = (event) => {
+
+    event.preventDefault();
+    setLoading(true);
+    if(email === "")
+      {
+        setEmailError("Email is mandatory");
+        showAlert("Email is mandatory","error");
+        setLoading(false);
+      }
+    else if(emailError)
+      {
+        console.log(emailError);
+        showAlert(emailError,"error");
+        setLoading(false);
+      }
+      else
+      {
+        const reqData = {
+          "emailId":email,
+          "name":" "
+        }
+         UAMApi.sendOTPForRegister(reqData,(response) =>
+    {
+      console.log(response);
+      if(response.data.message === "TOKEN_SENT")
+        {
+          showAlert("OTP sent to given email ID","success");
+          setShowVerifyOTPSignUpDetails(true);
+          setShowEmailForRegisterForm(false);
+          setShowRegisterForm(false);
+          setLoading(false);
+  
+        }
+
+    },
+  (error)=>
+  {
+    console.log(error);
+    setShowVerifyOTPSignUpDetails(false);
+    setShowEmailForRegisterForm(true);
+    setShowRegisterForm(false);
+    setLoading(false);
+    showAlert("","error");
+})
+
+
+      }
+   
+  };
+  const verifyOTP= (event) => {
+
+    event.preventDefault();
+    setLoading(true);
+    console.log(otp);
+    var concatOTP='';
+    otp.map(x => {
+      concatOTP+=x;
+    })
+    console.log(concatOTP);
+    if(concatOTP === "")
+      {
+        
+        showAlert("OTP is mandatory","error");
+        setLoading(false);
+      }
+   
+      else
+      {
+        const reqData = {
+          "emailId":email,
+          "token":concatOTP,
+        }
+        UAMApi.verifyOTPForRegister(reqData,(response) =>
+          {
+            console.log(response);
+            if(response)
+              {
+                setOtp(['','','','','','']);
+                showAlert("OTP verified successfully. Enter your details to register","success");
+                setShowVerifyOTPSignUpDetails(false);
+                setShowEmailForRegisterForm(false);
+                setShowRegisterForm(true);
+                setLoading(false);
+        
+              }
+      
+          },
+        (error)=>
+        {
+          console.log(error);
+          setOtp(['','','','','','']);
+          showAlert("","error");
+          setShowVerifyOTPSignUpDetails(true);
+          setShowEmailForRegisterForm(false);
+          setShowRegisterForm(false);
+          setLoading(false);
+
+        })
+
+
+      }
+
+  };
+  const handleRegisterSubmit = (event) => {
+    event.preventDefault();
+    setLoading(true);
+    validateRegisterForm(registerInputs);
+    const isEmpty = Object.values(registerInputs).some(value =>
+      (typeof value === 'string' && value.trim() === '') ||
+      value === null ||
+      value === undefined
+    );
+    const errors = validateRegisterForm(registerInputs);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setLoading(false);
+
+    }
+    else if (isEmpty) {
+      showAlert("All fields are mandatory", "error");
+      setLoading(false);
+
+    }
+    else
+    {
+    UAMApi.registerUser(registerInputs, (response) => {
+      console.log(response)
+      if(response.data.user)
+      {
+        // dispatch(loginSuccess(response.data.user.name));
+        // navigate("/home");
+        handleSwitchToLogin();
+        setLoading(false);
+      }
+      
+
+    }, (errorResponse) => {
+      console.log(errorResponse);
+      setLoading(false);
+      // if(errorResponse.response.data.message == "PASSWORD_INCORRECT")
+      //   {
+      //     showAlert("Incorrect password. Login with correct credentials","error");
+          
+      //   } 
+      // else if(errorResponse.response.data.message == "USERID_INCORRECT")
+      //     {
+      //       showAlert("Incorrect userid. Login with correct credentials","error");
+            
+      //     } 
+        
+        })
+  }
+  };
+  const handleSwitchToRegister = () => {
+    setIsForLogin(false);
+    setIsForRegister(true);
+    setShowEmailForRegisterForm(true);
+    setIsForForgotPwd(false);
+  };
+  const handleEmailInRegisterChange = (e) =>
+    {
+      if(e.target.value === "")
+        {
+          setEmailError("Email is mandatory");
+        }
+      else if(!validateEmail(e.target.value))
+        {
+          setEmailError("Enter a valid email");
+        }
+        else
+        {
+          setEmailError("");
+        }
+      setEmail(e.target.value);
+    }
+  const handleRegisterInputChange = (e) => {
+    
+    const { name, value } = e.target;
+    setRegisterInputs({ ...registerInputs, [name]: value });
+    clearError(name);  
+  };
+  const validateRegisterForm = (data) => {
+    const errors = {};
+    const scriptTagPattern = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+
+    if (!data.fullName ) {
+      errors.fullName = 'Name is required';
+    }
+    if (!data.password) {
+      errors.password = 'Password is required';
+    } 
+    
+    return errors;
+  };
+  //forgot password page related methods
+  const handleForgotPasswordSubmit = (event) => {
+    event.preventDefault();
+    setLoading(true);
+    validateForgotPwdForm(forgotpwdInputs);
+    const isEmpty = Object.values(forgotpwdInputs).some(value =>
+      (typeof value === 'string' && value.trim() === '') ||
+      value === null ||
+      value === undefined
+    );
+    const errors = validateForgotPwdForm(forgotpwdInputs);
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      setLoading(false);
+
+    }
+    else if (isEmpty) {
+      showAlert("All fields are mandatory", "error");
+      setLoading(false);
+
+    }
+    else
+    {
+    UAMApi.resetPassword(forgotpwdInputs, (response) => {
+      console.log(response)
+      if(response.data.user)
+      {
+        // dispatch(loginSuccess(response.data.user.name));
+        // navigate("/home");
+        handleSwitchToLogin();
+        setLoading(false);
+      }
+      
+
+    }, (errorResponse) => {
+      console.log(errorResponse);
+      setLoading(false);
+      // if(errorResponse.response.data.message == "PASSWORD_INCORRECT")
+      //   {
+      //     showAlert("Incorrect password. Login with correct credentials","error");
+          
+      //   } 
+      // else if(errorResponse.response.data.message == "USERID_INCORRECT")
+      //     {
+      //       showAlert("Incorrect userid. Login with correct credentials","error");
+            
+      //     } 
+        
+        })
+}
+      };
+  const handleSwitchToForgotPwd = () => {
+    setIsForLogin(false);
+    setIsForRegister(false);
+    setIsForForgotPwd(true);
+    setShowEmailForForgotPwdForm(true);
+
+  };
+  const handleForgotPwdInputChange = (e) => {
+    const { name, value } = e.target;
+    setLoginInputs({ ...loginInputs, [name]: value });
+    clearError(name);
+
+    if (name === 'confirmPassword' && value != loginInputs['password']) {
+      setFormErrors({ ...formErrors, confirmPassword: 'Password and confirm password should match' });
+    } else {
+      setFormErrors({ ...formErrors, confirmPassword: '' });
+      clearError("confirmPassword");
+
+    }
+  };
+  const handleEmailInForgotPwdChange = (e) =>
+    {
+      if(e.target.value === "")
+        {
+          setEmailError("Email is mandatory");
+        }
+      else if(!validateEmail(e.target.value))
+        {
+          setEmailError("Enter a valid email");
+        }
+        else
+        {
+          setEmailError("");
+        }
+      setEmail(e.target.value);
+    }
+  const handleSendOTPPwdresetCall  = (event) => {
+
+      event.preventDefault();
+      setLoading(true);
+      if(email === "")
+        {
+          setEmailError("Email is mandatory");
+          showAlert("Email is mandatory","error");
+          setLoading(false);
+        }
+      else if(emailError)
+        {
+          console.log(emailError);
+          showAlert(emailError,"error");
+          setLoading(false);
+        }
+        else
+        {
+          UAMApi.sendOTPForForgotPassword(email,(response) =>
+            {
+              console.log(response);
+              if(response)
+                {
+                  showAlert("OTP sent to the given email ID","success")
+                  setShowVerifyOTPPwdResetDetails(true);
+                  setShowEmailForForgotPwdForm(false);
+                  setShowResetPwdForm(false);
+                  setLoading(false);
+        
+                }
+        
+            },
+          (error)=>
+          {
+            console.log(error);
+            showAlert("","error")
+            setShowVerifyOTPPwdResetDetails(false);
+            setShowEmailForForgotPwdForm(true);
+            setShowResetPwdForm(false);
+            setLoading(false);
+  
+          })
+  
+  
+        }
+
+    };
+    const verifyOTPforPwdReset= (event) => {
+
+      event.preventDefault();
+      setLoading(true);
+      console.log(otp);
+      var concatOTP='';
+      otp.map(x => {
+        concatOTP+=x;
+      })
+      console.log(concatOTP);
+      if(concatOTP === "")
+        {
+          
+          showAlert("OTP is mandatory","error");
+          setLoading(false);
+        }
+     
+        else
+        {
+          UAMApi.verifyOTPForForgotPassword(concatOTP,(response) =>
+            {
+              console.log(response);
+              if(response)
+                {
+                  showAlert("OTP verified successfully. You can reset your password now","success");
+                  setShowVerifyOTPPwdResetDetails(false);
+                  setShowEmailForForgotPwdForm(false);
+                  setShowResetPwdForm(true);
+                  setLoading(false);
+        
+                }
+        
+            },
+          (error)=>
+          {
+            console.log(error);
+            showAlert("","error");
+            setShowVerifyOTPPwdResetDetails(true);
+            setShowEmailForForgotPwdForm(false);
+            setShowResetPwdForm(false);
+            setLoading(false);
+  
+          })
+  
+  
+        }
+
+    };
+    const validateForgotPwdForm = (data) => {
+      const errors = {};
+      const scriptTagPattern = /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi;
+  
+      if (!data.password ) {
+        errors.password = 'Password is required';
+      }
+      if (!data.confirmPassword) {
+        errors.confirmPassword = 'Confirm password is required';
+      } 
+      
+      return errors;
+    };
+
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
@@ -305,7 +709,102 @@ function PreLogin() {
             Sign up
           </Typography>
           <Box component="form" noValidate sx={{ mt: 3 }}>
-          {showRegisterForm &&<Grid container spacing={2}>
+          
+           {/* <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  autoComplete="given-name"
+                  name="fullName"
+                  required
+                  fullWidth
+                  id="fullName"
+                  label="Full Name"
+                  autoFocus
+                  onChange={handleRegisterInputChange}
+                  error={!!formErrors.fullName}
+                  helperText={formErrors.fullName}
+
+                  
+                />
+              </Grid> */}
+             
+              {/* <Grid item xs={12}> */}
+              {showEmailForRegisterForm &&<TextField
+                  required
+                  fullWidth
+                  id="email"
+                  label="Email Address"
+                  name="email"
+                  autoComplete="email"
+                  error={!!emailError}
+                  helperText={emailError}
+                  onChange={handleEmailInRegisterChange}
+                  
+                />}
+              {/* </Grid> 
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type="password"
+                  id="password"
+                  autoComplete="new-password"
+                  onChange={handleRegisterInputChange}
+                  error={!!formErrors.password}
+                  helperText={formErrors.password}
+
+                  
+                />
+              </Grid>
+            </Grid> */}
+            {showEmailForRegisterForm &&<Button
+              type="button"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+            onClick={handleSendOTPCall}>
+              Send OTP
+            </Button>}
+            {showVerifyOTPSignUpDetails &&<Grid container spacing={2}>
+              <Grid item xs={12}>
+                {/* <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="otp"
+              label="OTP"
+              type="text"
+              id="otp"
+              autoComplete="otp"
+              onChange={handleOtpChange}
+              error={!!otpError}
+              helperText={otpError}
+            /> */}
+            {otp.map((data, index) => (
+        <TextField
+          key={index}
+          value={data}
+          onChange={e => handleOTPChange(e.target, index)}
+          onKeyDown={e => handleKeyDown(e, index)}
+          inputProps={{ maxLength: 1, style: { textAlign: 'center' } }}
+          style={{ width: '3rem' ,margin:'5px'}}
+          inputRef={(el) => (inputRefs.current[index] = el)}
+        />
+      ))}
+            </Grid>
+            </Grid>}
+            {showVerifyOTPSignUpDetails && <Button
+              type="button"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              onClick={verifyOTP}
+            >
+              Verify OTP
+            </Button>}
+            {showRegisterForm &&<Grid container spacing={2}>
               <Grid item xs={12}>
                 <TextField
                   autoComplete="given-name"
@@ -323,20 +822,7 @@ function PreLogin() {
                 />
               </Grid>
              
-              <Grid item xs={12}>
-                <TextField
-                  required
-                  fullWidth
-                  id="email"
-                  label="Email Address"
-                  name="email"
-                  autoComplete="email"
-                  error={!!formErrors.email}
-                  helperText={formErrors.email}
-                  onChange={handleRegisterInputChange}
-                  
-                />
-              </Grid>
+              
               <Grid item xs={12}>
                 <TextField
                   required
@@ -354,29 +840,15 @@ function PreLogin() {
                 />
               </Grid>
             </Grid>}
-            {showRegisterForm &&<Button
+            {showRegisterForm && <Button
               type="button"
               fullWidth
               variant="contained"
+              color='success'
               sx={{ mt: 3, mb: 2 }}
-            onClick={handleSendOTPCall}>
-              Send OTP
-            </Button>}
-            {showVerifyOTPSignUpDetails && <Button
-              type="button"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              onClick={handleRegisterSubmit}
             >
-              Verify OTP
-            </Button>}
-            {showVerifyOTPSignUpDetails && <Button
-              type="button"
-              fullWidth
-              variant="contained"
-              sx={{ mt: 3, mb: 2 }}
-            >
-              Sign Up
+              Register
             </Button>}
             <Grid container justifyContent="flex-end">
               <Grid item>
@@ -403,8 +875,9 @@ function PreLogin() {
           <Typography component="h1" variant="h5">
             Forgot Password
           </Typography>
-          <Box component="form" noValidate onSubmit={handleForgotPasswordSubmit} sx={{ mt: 1 }}>
-            <TextField
+          
+          <Box component="form" noValidate sx={{ mt: 1 }}>
+          {showEmailForForgotPwdForm && <TextField
               margin="normal"
               required
               fullWidth
@@ -413,18 +886,104 @@ function PreLogin() {
               name="email"
               autoComplete="email"
               autoFocus
-              error={!!formErrors.email}
-              helperText={formErrors.email}
-              onChange={handleForgotPwdInputChange}
-            />
-            <Button
+              error={emailError}
+              helperText={emailError}
+              onChange={handleEmailInForgotPwdChange}
+            />}
+            {showEmailForForgotPwdForm &&<Button
               type="submit"
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
+              onClick={handleSendOTPPwdresetCall}
+            >
+              Send OTP to verify
+            </Button>}
+            {showVerifyOTPPwdResetDetails &&<Grid container spacing={2}>
+              <Grid item xs={12}>
+                {/* <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="otp"
+              label="OTP"
+              type="text"
+              id="otp"
+              autoComplete="otp"
+              onChange={handleOtpChange}
+              error={!!otpError}
+              helperText={otpError}
+            /> */}
+            {otp.map((data, index) => (
+        <TextField
+          key={index}
+          value={data}
+          onChange={e => handleOTPChange(e.target, index)}
+          onKeyDown={e => handleKeyDown(e, index)}
+          inputProps={{ maxLength: 1, style: { textAlign: 'center' } }}
+          style={{ width: '3rem' ,margin:'5px'}}
+          inputRef={(el) => (inputRefs.current[index] = el)}
+        />
+      ))}
+            </Grid>
+            </Grid>}
+            {showVerifyOTPPwdResetDetails && <Button
+              type="button"
+              fullWidth
+              variant="contained"
+              sx={{ mt: 3, mb: 2 }}
+              onClick={verifyOTPforPwdReset}
+            >
+              Verify OTP
+            </Button>}
+            {showResetPwdForm &&<Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  autoComplete="password"
+                  name="password"
+                  required
+                  fullWidth
+                  id="password"
+                  label="Password"
+                  type="password"
+                  autoFocus
+                  onChange={handleForgotPwdInputChange}
+                  error={!!formErrors.password}
+                  helperText={formErrors.password}
+
+                  
+                />
+              </Grid>
+             
+              
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  type="password"
+                  id="confirmPassword"
+                  autoComplete="new-password"
+                  onChange={handleForgotPwdInputChange}
+                  error={!!formErrors.confirmPassword}
+                  helperText={formErrors.confirmPassword}
+
+                  
+                />
+              </Grid>
+            </Grid>}
+            {showResetPwdForm && <Button
+              type="button"
+              fullWidth
+              variant="contained"
+              color='success'
+              sx={{ mt: 3, mb: 2 }}
+              onClick={handleForgotPasswordSubmit}
             >
               Reset Password
-            </Button>
+            </Button>}
+
           </Box>
         </Box>}
         {/* FORGOT PASSWORD PAGE ENDS */}

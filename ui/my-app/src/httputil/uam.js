@@ -15,11 +15,34 @@ const getSession = (parameters, onSuccess, onError) => {
 const logoutUser = (parameters, onSuccess, onError) => {
     http.get(getDomainUrl() + "logout", parameters, onSuccess, onError);
 }
+const sendOTPForRegister = (formData, onSuccess, onError) => {
+    http.post(getDomainUrl() + "registration/send-email-otp", formData, onSuccess, onError);
+}
+const verifyOTPForRegister = (formData, onSuccess, onError) => {
+    http.post(getDomainUrl() + "registration/verify-email-otp", formData, onSuccess, onError);
+}
+const registerUser = (formData, onSuccess, onError) => {
+    http.post(getDomainUrl() + "login", formData, onSuccess, onError);
+}
+const sendOTPForForgotPassword = (formData, onSuccess, onError) => {
+    http.post(getDomainUrl() + "login", formData, onSuccess, onError);
+}
+const verifyOTPForForgotPassword = (formData, onSuccess, onError) => {
+    http.post(getDomainUrl() + "login", formData, onSuccess, onError);
+}
+const resetPassword = (formData, onSuccess, onError) => {
+    http.post(getDomainUrl() + "login", formData, onSuccess, onError);
+}
 const UAMApi = {
     loginUser,
     getSession,
     logoutUser,
-   
+    sendOTPForRegister,
+    verifyOTPForRegister,
+    registerUser,
+    sendOTPForForgotPassword,
+    verifyOTPForForgotPassword,
+    resetPassword
 }
 
 export default UAMApi;
