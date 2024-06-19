@@ -9,18 +9,24 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
+import com.common.model.User;
+import com.common.model.UserDetails;
 import com.um.entity.AuthenticationType;
 import com.um.entity.RegistrationToken;
 import com.um.entity.TokenStatus;
+import com.um.entity.UserEntity;
 import com.um.handler.EmailService;
 import com.um.handler.RegistrationHandler;
 import com.um.model.EmailMessage;
+import com.um.model.RegistrationRequest;
+import com.um.model.RegistrationResponse;
 import com.um.model.TokenInitiator;
 import com.um.model.TokenInitiatorResponse;
 import com.um.model.TokenVerificationResponse;
 import com.um.model.TokenVerifier;
 import com.um.repository.RegistrationTokenRepository;
 import com.um.repository.UserRepository;
+import com.um.util.PasswordValidator;
 import com.um.util.TextUtil;
 import com.um.util.TokenUtil;
 
@@ -32,15 +38,18 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 	private EmailService emailService;
 	private UserRepository userRepository;
 	private RegistrationTokenRepository tokenRepository;
+	private PasswordValidator passwordValidator;
 	private Environment env;
 	
 	public EmailRegistrationHandler(@Qualifier("simpleMailService") EmailService emailService,
 			UserRepository userRepository,
 			RegistrationTokenRepository tokenRepository,
+			@Qualifier("bCryptPasswordValidator") PasswordValidator passwordValidator,
 			Environment env) {
 		this.emailService = emailService;
 		this.userRepository = userRepository;
 		this.tokenRepository = tokenRepository;
+		this.passwordValidator = passwordValidator;
 		this.env = env;
 	}
 
@@ -57,7 +66,7 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 					// Send OTP in email
 					String token = TokenUtil.generateRandomToken(Integer.parseInt(getMailProperty("num-digits-token")));
 					Map<String, String> substitutionMap = new HashMap<String, String>();
-					substitutionMap.put("userName", tokenInitiator.getUserName());
+					substitutionMap.put("userName", tokenInitiator.getAuthenticationId());
 					substitutionMap.put("token", token);
 					String mailBody = TextUtil.substituteVariables(getMailProperty("body"), substitutionMap);
 					EmailMessage message = new EmailMessage(getMailProperty("from-address"),
@@ -96,7 +105,8 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 			}	else {
 				List<RegistrationToken> registrationTokenList =  tokenRepository.findByToken(tokenVerifier.getToken())
 					.stream()
-					.filter(result -> AuthenticationType.email.equals(AuthenticationType.email))
+					.filter(result -> AuthenticationType.email.equals(AuthenticationType.email)
+								&& tokenVerifier.getAuthenticationId().equals(result.getAuthenticationId()))
 					.toList();
 				
 				if(registrationTokenList != null && !registrationTokenList.isEmpty()) {
@@ -125,22 +135,99 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 							return TokenVerificationResponse.userAlreadyExists();
 						}
 					}	 else {
-						return TokenVerificationResponse.invalidToken();
+						return TokenVerificationResponse.invalidTokenOrEmail();
 					}
 				}	 else {
-					return TokenVerificationResponse.invalidToken();
+					return TokenVerificationResponse.invalidTokenOrEmail();
 				}
 			}
 		}
 		
 		return TokenVerificationResponse.reqdParamsNotProvided();
 	}
+
+	@Override
+	public RegistrationResponse registerUser(RegistrationRequest request) {
+		
+		RegistrationResponse registrationResponse = null;
+		
+		if(request != null) {
+			
+			if(request.getUserId() != null && request.getEmailId() != null) {
+				
+				if(doesUserExist(request.getUserId())) {
+					registrationResponse = RegistrationResponse.userAlreadyExists();
+				}	else {
+					if(request.getToken() != null) {
+						List<RegistrationToken> registrationTokenList =  tokenRepository.findByToken(request.getToken())
+								.stream()
+								.filter(result -> AuthenticationType.email.equals(AuthenticationType.email)
+											&& request.getUserId().equals(result.getAuthenticationId()))
+								.toList();
+						if(registrationTokenList != null && !registrationTokenList.isEmpty()) {
+							RegistrationToken token = registrationTokenList.get(0);
+							
+							if(token != null) {
+								if(TokenStatus.sent.equals(token.getTokenStatus()) ) {
+									registrationResponse = RegistrationResponse.tokenNotVerified();
+								}	else if(TokenStatus.expired.equals(token.getTokenStatus())) {
+									registrationResponse = RegistrationResponse.tokenExpired();
+								}	else if(TokenStatus.verified.equals(token.getTokenStatus())) {
+									
+									if(request.getPassword() != null && request.getConfirmPassword() != null
+											&& request.getPassword().equals(request.getConfirmPassword())) {
+										token.setTokenStatus(TokenStatus.registered);
+										tokenRepository.save(token);
+										UserEntity userEntity = new UserEntity();
+										userEntity.setLoginId(request.getUserId());
+										userEntity.setEmailId(request.getEmailId());
+										userEntity.setName(request.getName());
+										userEntity.setPassword(passwordValidator.hashPassword(request.getPassword()));
+										userRepository.save(userEntity);
+										
+										User user = new User();
+										UserDetails userDetails = userEntity.getUserDetails();
+										user.setUserDetails(userDetails);
+										
+										registrationResponse = RegistrationResponse.registrationSuccess(user);
+										
+									}	else {
+										registrationResponse = RegistrationResponse.passwordAndConfirmPasswordDoesntMatch();
+									}
+									
+									
+								}	else {
+									registrationResponse = RegistrationResponse.userAlreadyExists();
+								}
+							}	else {
+								registrationResponse = RegistrationResponse.invalidTokenOrEmail();
+							}
+
+						}	else {
+							registrationResponse = RegistrationResponse.invalidTokenOrEmail();
+						}
+
+					}	else {
+						registrationResponse = new RegistrationResponse(403, RegistrationResponse.REQD_PARAMS_NOT_PROVIDED);
+					}
+				}
+				
+			}	else {
+				registrationResponse = new RegistrationResponse(403, RegistrationResponse.REQD_PARAMS_NOT_PROVIDED);
+			}
+			
+		}	else {
+			registrationResponse = new RegistrationResponse(403, RegistrationResponse.REQD_PARAMS_NOT_PROVIDED);
+		}
+		
+		return registrationResponse;
+	}
 	
 	@Override
 	public boolean doesUserExist(String authId) {
-
+		
 		var userList = userRepository.findByLoginId(authId);
-
+		
 		if(userList == null || userList.isEmpty()) {
 			userList = userRepository.findByEmailId(authId);
 		}
