@@ -12,8 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "registration_token")
-public class RegistrationToken {
+@Table(name = "forgot_password_token")
+public class ForgotPasswordToken {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,7 +32,7 @@ public class RegistrationToken {
 	
     @Enumerated(EnumType.STRING)
     @Column(name = "token_status")
-	private RegistrationTokenStatus tokenStatus;
+	private ForgotPwdTokenStatus tokenStatus;
 	
 	@Column(name = "event_timestamp")
 	private LocalDateTime eventTimeStamp;
@@ -72,11 +72,11 @@ public class RegistrationToken {
 		this.authenticationType = authenticationType;
 	}
 
-	public RegistrationTokenStatus getTokenStatus() {
+	public ForgotPwdTokenStatus getTokenStatus() {
 		return tokenStatus;
 	}
 
-	public void setTokenStatus(RegistrationTokenStatus tokenStatus) {
+	public void setTokenStatus(ForgotPwdTokenStatus tokenStatus) {
 		this.tokenStatus = tokenStatus;
 	}
 

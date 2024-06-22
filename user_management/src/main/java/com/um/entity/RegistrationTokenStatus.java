@@ -1,6 +1,6 @@
 package com.um.entity;
 
-public enum TokenStatus {
+public enum RegistrationTokenStatus {
 
 	sent, verified, expired, registered
 	
