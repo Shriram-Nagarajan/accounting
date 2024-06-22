@@ -17,23 +17,28 @@ CREATE TABLE userdb.users (
     email_id VARCHAR(400)
 )  CHARSET=UTF8MB4 , COLLATE = UTF8MB4_UNICODE_CI;
 
-drop table if exists userdb.SPRING_SESSION;
-CREATE TABLE if not exists userdb.SPRING_SESSION (
-    PRIMARY_ID CHAR(36) NOT NULL,
-    SESSION_ID CHAR(36) NOT NULL,
-    CREATION_TIME BIGINT NOT NULL,
-    LAST_ACCESS_TIME BIGINT NOT NULL,
-    MAX_INACTIVE_INTERVAL INT NOT NULL,
-    EXPIRY_TIME BIGINT NOT NULL,
-    PRINCIPAL_NAME VARCHAR(100),
-    PRIMARY KEY (PRIMARY_ID)
-);
+drop table if exists `userdb`.`forgot_password_token`;
+CREATE TABLE `userdb`.`forgot_password_token` (
+  `token_id` bigint NOT NULL AUTO_INCREMENT,
+  `token` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `authentication_id` varchar(350) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `authentication_type` enum('email','mobile') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token_status` enum('sent','used','expired') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `event_timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `expiry_timestamp` timestamp NOT NULL,
+  PRIMARY KEY (`token_id`),
+  UNIQUE KEY `token` (`token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-drop table if exists userdb.SPRING_SESSION_ATTRIBUTES;
-CREATE TABLE if not exists userdb.SPRING_SESSION_ATTRIBUTES (
-    SESSION_PRIMARY_ID CHAR(36) NOT NULL,
-    ATTRIBUTE_NAME VARCHAR(200) NOT NULL,
-    ATTRIBUTE_BYTES BLOB NOT NULL,
-    PRIMARY KEY (SESSION_PRIMARY_ID, ATTRIBUTE_NAME),
-    CONSTRAINT SPRING_SESSION_ATTRIBUTES_FK FOREIGN KEY (SESSION_PRIMARY_ID) REFERENCES SPRING_SESSION(PRIMARY_ID) ON DELETE CASCADE
-);
+drop table if exists `userdb`.`registration_token`;
+CREATE TABLE `userdb`.`registration_token` (
+  `token_id` bigint NOT NULL AUTO_INCREMENT,
+  `token` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `authentication_id` varchar(350) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `authentication_type` enum('email','mobile') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token_status` enum('sent','verified','expired','registered') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `event_timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `expiry_timestamp` timestamp NOT NULL,
+  PRIMARY KEY (`token_id`),
+  UNIQUE KEY `token` (`token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

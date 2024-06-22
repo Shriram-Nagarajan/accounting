@@ -13,7 +13,7 @@ import com.common.model.User;
 import com.common.model.UserDetails;
 import com.um.entity.AuthenticationType;
 import com.um.entity.RegistrationToken;
-import com.um.entity.TokenStatus;
+import com.um.entity.RegistrationTokenStatus;
 import com.um.entity.UserEntity;
 import com.um.handler.EmailService;
 import com.um.handler.RegistrationHandler;
@@ -64,6 +64,8 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 				} else {
 					
 					// Send OTP in email
+					// NOTE: Currently using a 6 digit token and expecting it to be a unique key
+					// TODO: Refine this approach to have a more appropriate unique key or remove the unique key
 					String token = TokenUtil.generateRandomToken(Integer.parseInt(getMailProperty("num-digits-token")));
 					Map<String, String> substitutionMap = new HashMap<String, String>();
 					substitutionMap.put("userName", tokenInitiator.getAuthenticationId());
@@ -82,7 +84,7 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 					LocalDateTime expiryTimeStamp = LocalDateTime.now()
 							.plusMinutes(Integer.parseInt(getMailProperty("expiry-minutes")));
 					tokenEntity.setExpiryTimeStamp(expiryTimeStamp);
-					tokenEntity.setTokenStatus(TokenStatus.sent);
+					tokenEntity.setTokenStatus(RegistrationTokenStatus.sent);
 					tokenRepository.saveAndFlush(tokenEntity);
 					
 					return TokenInitiatorResponse.tokenSent();
@@ -114,22 +116,22 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 					RegistrationToken token = registrationTokenList.get(0);
 					
 					if(token != null) {
-						if(TokenStatus.sent.equals(token.getTokenStatus()) ) {
+						if(RegistrationTokenStatus.sent.equals(token.getTokenStatus()) ) {
 							
 							LocalDateTime currentTime = LocalDateTime.now();
 							
 							if(currentTime.isAfter(token.getExpiryTimeStamp())) {
-								token.setTokenStatus(TokenStatus.expired);
+								token.setTokenStatus(RegistrationTokenStatus.expired);
 								tokenRepository.save(token);
 								return TokenVerificationResponse.tokenExpired();
 							}
 							
-							token.setTokenStatus(TokenStatus.verified);
+							token.setTokenStatus(RegistrationTokenStatus.verified);
 							tokenRepository.save(token);
 							return TokenVerificationResponse.tokenVerifiedSuccessfully();
-						}	else if(TokenStatus.verified.equals(token.getTokenStatus()) ) {
+						}	else if(RegistrationTokenStatus.verified.equals(token.getTokenStatus()) ) {
 							return TokenVerificationResponse.tokenVerifiedSuccessfully();
-						}	else if(TokenStatus.expired.equals(token.getTokenStatus())) {
+						}	else if(RegistrationTokenStatus.expired.equals(token.getTokenStatus())) {
 							return TokenVerificationResponse.tokenExpired();
 						}	else {
 							return TokenVerificationResponse.userAlreadyExists();
@@ -168,15 +170,15 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 							RegistrationToken token = registrationTokenList.get(0);
 							
 							if(token != null) {
-								if(TokenStatus.sent.equals(token.getTokenStatus()) ) {
+								if(RegistrationTokenStatus.sent.equals(token.getTokenStatus()) ) {
 									registrationResponse = RegistrationResponse.tokenNotVerified();
-								}	else if(TokenStatus.expired.equals(token.getTokenStatus())) {
+								}	else if(RegistrationTokenStatus.expired.equals(token.getTokenStatus())) {
 									registrationResponse = RegistrationResponse.tokenExpired();
-								}	else if(TokenStatus.verified.equals(token.getTokenStatus())) {
+								}	else if(RegistrationTokenStatus.verified.equals(token.getTokenStatus())) {
 									
 									if(request.getPassword() != null && request.getConfirmPassword() != null
 											&& request.getPassword().equals(request.getConfirmPassword())) {
-										token.setTokenStatus(TokenStatus.registered);
+										token.setTokenStatus(RegistrationTokenStatus.registered);
 										tokenRepository.save(token);
 										UserEntity userEntity = new UserEntity();
 										userEntity.setLoginId(request.getUserId());
