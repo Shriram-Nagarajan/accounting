@@ -22,7 +22,7 @@ const verifyOTPForRegister = (formData, onSuccess, onError) => {
     http.post(getDomainUrl() + "registration/verify-email-otp", formData, onSuccess, onError);
 }
 const registerUser = (formData, onSuccess, onError) => {
-    http.post(getDomainUrl() + "login", formData, onSuccess, onError);
+    http.post(getDomainUrl() + "registration/register-user", formData, onSuccess, onError);
 }
 const sendOTPForForgotPassword = (formData, onSuccess, onError) => {
     http.post(getDomainUrl() + "login", formData, onSuccess, onError);
