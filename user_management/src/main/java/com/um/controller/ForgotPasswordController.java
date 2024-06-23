@@ -13,6 +13,8 @@ import com.um.handler.ForgotPasswordHandler;
 import com.um.model.ForgotPwdTokenRequest;
 import com.um.model.ForgotPwdTokenResponse;
 import com.um.model.ForgotPwdTokenVerificationResponse;
+import com.um.model.ResetPasswordRequest;
+import com.um.model.ResetPasswordResponse;
 import com.um.model.VerifyForgotPwdTokenRequest;
 
 @RestController
@@ -53,6 +55,22 @@ public class ForgotPasswordController {
 		// Return response
 		return ResponseEntity.status(tokenResponse.getStatusCode()).body(tokenResponse);
 		
+	}
+	
+	@PostMapping("/reset-password/{authenticationType}")
+	public ResponseEntity<ResetPasswordResponse> resetPassword(@PathVariable("authenticationType") AuthenticationType authenticationType, @RequestBody ResetPasswordRequest resetPasswordRequest) {
+
+		// Choose appropriate implementation handler
+		ForgotPasswordHandler forgotPasswordHandler = (ForgotPasswordHandler) applicationContext.getBean(
+				authenticationType.name()+ForgotPasswordHandler.HANDLER_NAME);
+		
+		// Validate that user exists, the token has been verified
+		// And then, Update the password
+		ResetPasswordResponse response = forgotPasswordHandler.resetPassword(resetPasswordRequest);
+		
+		// Return appropriate response
+		return ResponseEntity.status(response.getStatusCode()).body(response);
+
 	}
 	
 }
