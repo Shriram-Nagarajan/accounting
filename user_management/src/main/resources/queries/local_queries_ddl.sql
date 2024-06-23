@@ -23,7 +23,7 @@ CREATE TABLE `userdb`.`forgot_password_token` (
   `token` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `authentication_id` varchar(350) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `authentication_type` enum('email','mobile') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `token_status` enum('sent','used','expired') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token_status` enum('sent','verified','used','expired') COLLATE utf8mb4_unicode_ci NOT NULL,
   `event_timestamp` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `expiry_timestamp` timestamp NOT NULL,
   PRIMARY KEY (`token_id`),
@@ -42,3 +42,5 @@ CREATE TABLE `userdb`.`registration_token` (
   PRIMARY KEY (`token_id`),
   UNIQUE KEY `token` (`token`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+

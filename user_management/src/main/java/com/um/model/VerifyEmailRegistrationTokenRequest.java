@@ -1,6 +1,6 @@
 package com.um.model;
 
-public class VerifyEmailTokenRequest {
+public class VerifyEmailRegistrationTokenRequest {
 	
 	private String emailId;
 	private String token;

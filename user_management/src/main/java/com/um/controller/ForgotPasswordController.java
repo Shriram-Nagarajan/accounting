@@ -12,6 +12,8 @@ import com.um.entity.AuthenticationType;
 import com.um.handler.ForgotPasswordHandler;
 import com.um.model.ForgotPwdTokenRequest;
 import com.um.model.ForgotPwdTokenResponse;
+import com.um.model.ForgotPwdTokenVerificationResponse;
+import com.um.model.VerifyForgotPwdTokenRequest;
 
 @RestController
 @RequestMapping("/forgot-password")
@@ -23,7 +25,7 @@ public class ForgotPasswordController {
 		this.applicationContext = applicationContext;
 	}
 	
-	@PostMapping("/{authenticationType}")
+	@PostMapping("/send-token/{authenticationType}")
 	public ResponseEntity<ForgotPwdTokenResponse> sendToken(@PathVariable("authenticationType") AuthenticationType authenticationType, @RequestBody ForgotPwdTokenRequest tokenRequest) {
 		
 		// Choose appropriate implementation handler
@@ -38,6 +40,19 @@ public class ForgotPasswordController {
 		
 	}
 	
-	
+	@PostMapping("/verify-token/{authenticationType}")
+	public ResponseEntity<ForgotPwdTokenVerificationResponse> verifyToken(@PathVariable("authenticationType") AuthenticationType authenticationType, @RequestBody VerifyForgotPwdTokenRequest tokenRequest) {
+		
+		// Choose appropriate implementation handler
+		ForgotPasswordHandler forgotPasswordHandler = (ForgotPasswordHandler) applicationContext.getBean(
+				authenticationType.name()+ForgotPasswordHandler.HANDLER_NAME);
+				
+		// Verify the token and then update the token status in DB
+		ForgotPwdTokenVerificationResponse tokenResponse = forgotPasswordHandler.verifyToken(tokenRequest);
+		
+		// Return response
+		return ResponseEntity.status(tokenResponse.getStatusCode()).body(tokenResponse);
+		
+	}
 	
 }

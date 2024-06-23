@@ -2,6 +2,7 @@ package com.um.handler.impl;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,6 +17,8 @@ import com.um.handler.ForgotPasswordHandler;
 import com.um.model.EmailMessage;
 import com.um.model.ForgotPwdTokenRequest;
 import com.um.model.ForgotPwdTokenResponse;
+import com.um.model.ForgotPwdTokenVerificationResponse;
+import com.um.model.VerifyForgotPwdTokenRequest;
 import com.um.repository.ForgotPwdTokenRepository;
 import com.um.repository.UserRepository;
 import com.um.util.TextUtil;
@@ -91,7 +94,64 @@ public class EmailForgotPasswordHandler implements ForgotPasswordHandler {
 		return ForgotPwdTokenResponse.reqdParamsNotProvided();
 		
 	}
-	
+
+	@Override
+	public ForgotPwdTokenVerificationResponse verifyToken(VerifyForgotPwdTokenRequest tokenRequest) {
+		
+		// Validate the user Id
+		var userList = userRepository.findByLoginId(tokenRequest.getAuthenticationId());
+		
+		if(userList == null || userList.isEmpty()) {
+			userList = userRepository.findByEmailId(tokenRequest.getAuthenticationId());
+			
+			if(userList == null || userList.isEmpty()) {
+				return ForgotPwdTokenVerificationResponse.userDoesntExist();
+			}
+		}
+		
+		// Validate the token
+		List<ForgotPasswordToken> forgotPasswordTokenList =  tokenRepository.findByToken(tokenRequest.getToken())
+				.stream()
+				.filter(result -> AuthenticationType.email.equals(AuthenticationType.email)
+							&& tokenRequest.getAuthenticationId().equals(result.getAuthenticationId()))
+				.toList();
+		
+		if(forgotPasswordTokenList != null && !forgotPasswordTokenList.isEmpty()) {
+			
+			ForgotPasswordToken token = forgotPasswordTokenList.get(0);
+			
+			if(token != null) {
+				
+				if(ForgotPwdTokenStatus.sent.equals(token.getTokenStatus()) ) {
+					
+					LocalDateTime currentTime = LocalDateTime.now();
+					
+					if(currentTime.isAfter(token.getExpiryTimeStamp())) {
+						token.setTokenStatus(ForgotPwdTokenStatus.expired);
+						tokenRepository.save(token);
+						return ForgotPwdTokenVerificationResponse.tokenExpired();
+					}
+					
+					token.setTokenStatus(ForgotPwdTokenStatus.verified);
+					tokenRepository.save(token);
+					return ForgotPwdTokenVerificationResponse.tokenVerifiedSuccessfully();
+				}	else if(ForgotPwdTokenStatus.verified.equals(token.getTokenStatus())) {
+					return ForgotPwdTokenVerificationResponse.tokenVerifiedSuccessfully();
+				}	else if(ForgotPwdTokenStatus.expired.equals(token.getTokenStatus()) ) {
+					return ForgotPwdTokenVerificationResponse.tokenExpired();
+				}	else {
+					return ForgotPwdTokenVerificationResponse.tokenAlreadyUsed();
+				}
+			}	else {
+				return ForgotPwdTokenVerificationResponse.invalidTokenOrEmail();
+			}
+			
+		}	else {
+			return ForgotPwdTokenVerificationResponse.invalidTokenOrEmail();
+		}
+		
+	}
+
 	private String getMailProperty(String key) {
 		return env.getProperty(FORGOT_PWD_EMAIL_PROP+key);
 	}

@@ -15,7 +15,7 @@ import com.um.model.TokenInitiator;
 import com.um.model.TokenInitiatorResponse;
 import com.um.model.TokenVerificationResponse;
 import com.um.model.TokenVerifier;
-import com.um.model.VerifyEmailTokenRequest;
+import com.um.model.VerifyEmailRegistrationTokenRequest;
 import com.um.registration.RegistrationFactory;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,7 +53,7 @@ public class RegistrationController {
 	}
 
 	@PostMapping("/verify-email-otp")
-	public ResponseEntity<TokenVerificationResponse> verifyEmailRegistrationToken(@RequestBody VerifyEmailTokenRequest request) {
+	public ResponseEntity<TokenVerificationResponse> verifyEmailRegistrationToken(@RequestBody VerifyEmailRegistrationTokenRequest request) {
 		
 		TokenVerificationResponse response = null;
 		

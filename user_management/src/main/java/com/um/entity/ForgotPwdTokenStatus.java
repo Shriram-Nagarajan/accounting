@@ -2,6 +2,6 @@ package com.um.entity;
 
 public enum ForgotPwdTokenStatus {
 
-	sent, used, expired
+	sent, verified, used, expired
 
 }
