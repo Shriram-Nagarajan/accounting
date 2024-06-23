@@ -37,7 +37,8 @@ function PreLogin() {
   const [email, setEmail] = useState('');
   const [emailError, setEmailError] = useState('');
   const [otp, setOtp] = useState(Array(6).fill(''));
-  const [concatOTPForRegister,setConcatOTPOTPForRegister] = useState('');
+  const [concatOTPForRegister,setConcatOTPForRegister] = useState('');
+  const [concatOTPForPwdReset,setConcatOTPForPwdReset] = useState('');
   const [otpErrors, setOtpErrors] = useState(Array(6).fill(false));
   const inputRefs = useRef([]);
   const [loading, setLoading] = useState(false);
@@ -289,7 +290,7 @@ function PreLogin() {
     otp.map(x => {
       dummyvar += x;
     })
-    setConcatOTPOTPForRegister(dummyvar);
+    setConcatOTPForRegister(dummyvar);
     console.log(concatOTPForRegister);
     if (dummyvar === "") {
 
@@ -384,54 +385,45 @@ function PreLogin() {
       UAMApi.registerUser(reqData, (response) => {
         console.log(response)
         if (response.data.message === "SUCCESS") {
-          dispatch(loginSuccess(response.data.user.name));
+          dispatch(loginSuccess(response.data.user.userDetails.name));
           navigate("/home");
           // handleSwitchToLogin();
           setLoading(false);
         }
-        else if (response.data.message === "USER_ALREADY_EXISTS") {
+        
+
+
+      }, (errorResponse) => {
+        console.log(errorResponse);
+        setLoading(false);
+        if (errorResponse.response.data.message === "USER_ALREADY_EXISTS") {
           showAlert("You are already our valued user.Please login", "error");
           handleSwitchToLogin();
           setLoading(false);
         }
-        else if (response.data.message === "UNVERIFIED_TOKEN") {
+        else if (errorResponse.response.data.message === "UNVERIFIED_TOKEN") {
           showAlert("Your OTP is not verified. Please register again", "error");
           handleSwitchToRegister();
           setLoading(false);
         }
-        else if (response.data.message === "INVALID_TOKEN_OR_EMAIL") {
+        else if (errorResponse.response.data.message === "INVALID_TOKEN_OR_EMAIL") {
           showAlert("Something went wrong.Please register again", "error");
           handleSwitchToRegister();
           setLoading(false);
         }
-        else if (response.data.message === "TOKEN_EXPIRED") {
+        else if (errorResponse.response.data.message === "TOKEN_EXPIRED") {
           showAlert("OTP expired.Please generate again", "error");
           handleSwitchToRegister();
           setLoading(false);
 
         }
-        else if (response.data.message === "PASSWORDS_DOESNT_MATCH") {
+        else if (errorResponse.response.data.message === "PASSWORDS_DOESNT_MATCH") {
           showAlert("Password and confirm password should match. Please enter details again", "error");
           handleSwitchToRegister();
           setLoading(false);
 
         }
 
-
-
-      }, (errorResponse) => {
-        console.log(errorResponse);
-        setLoading(false);
-        // if(errorResponse.response.data.message == "PASSWORD_INCORRECT")
-        //   {
-        //     showAlert("Incorrect password. Login with correct credentials","error");
-
-        //   } 
-        // else if(errorResponse.response.data.message == "USERID_INCORRECT")
-        //     {
-        //       showAlert("Incorrect userid. Login with correct credentials","error");
-
-        //     } 
 
       })
     }
@@ -504,11 +496,20 @@ function PreLogin() {
 
     }
     else {
-      UAMApi.resetPassword(forgotpwdInputs, (response) => {
+      const reqData = {
+        "userId": email,
+        "name": registerInputs.fullName,
+        "emailId": email,
+        "token": concatOTPForRegister,
+        "password": registerInputs.password,
+        "confirmPassword": registerInputs.confirmPassword,
+    }
+      UAMApi.resetPassword(reqData, (response) => {
         console.log(response)
-        if (response.data.user) {
-          // dispatch(loginSuccess(response.data.user.name));
-          // navigate("/home");
+        if (response.data.message === "SUCCESS") {
+          //dispatch(loginSuccess(response.data.user.userDetails.name));
+          //navigate("/home");
+          showAlert("Password reset sucecssfully. Please login","success")
           handleSwitchToLogin();
           setLoading(false);
         }
@@ -517,17 +518,33 @@ function PreLogin() {
       }, (errorResponse) => {
         console.log(errorResponse);
         setLoading(false);
-        // if(errorResponse.response.data.message == "PASSWORD_INCORRECT")
-        //   {
-        //     showAlert("Incorrect password. Login with correct credentials","error");
+        if (errorResponse.response.data.message === "USER_DOESNT_EXISTS") {
+          showAlert("ID not found.Please register", "error");
+          handleSwitchToRegister();
+          setLoading(false);
+        }
+        else if (errorResponse.response.data.message === "UNVERIFIED_TOKEN") {
+          showAlert("Your OTP is not verified. Please try again", "error");
+          handleSwitchToForgotPwd();
+          setLoading(false);
+        }
+        else if (errorResponse.response.data.message === "INVALID_TOKEN_OR_EMAIL") {
+          showAlert("Something went wrong.Please try again", "error");
+          handleSwitchToForgotPwd();
+          setLoading(false);
+        }
+        else if (errorResponse.response.data.message === "TOKEN_EXPIRED") {
+          showAlert("OTP expired.Please generate again", "error");
+          handleSwitchToForgotPwd();
+          setLoading(false);
 
-        //   } 
-        // else if(errorResponse.response.data.message == "USERID_INCORRECT")
-        //     {
-        //       showAlert("Incorrect userid. Login with correct credentials","error");
+        }
+        else if (errorResponse.response.data.message === "PASSWORDS_DOESNT_MATCH") {
+          showAlert("Password and confirm password should match. Please enter details again", "error");
+          handleSwitchToForgotPwd();
+          setLoading(false);
 
-        //     } 
-
+        }
       })
     }
   };
@@ -580,26 +597,41 @@ function PreLogin() {
       setLoading(false);
     }
     else {
-      UAMApi.sendOTPForForgotPassword(email, (response) => {
+      const reqData = {
+        "emailId": email,
+      }
+      UAMApi.sendOTPForForgotPassword(reqData, (response) => {
         console.log(response);
         if (response) {
+          if (response.data.message === "TOKEN_SENT") {
+
           showAlert("OTP sent to the given email ID", "success")
           setShowVerifyOTPPwdResetDetails(true);
           setShowEmailForForgotPwdForm(false);
           setShowResetPwdForm(false);
           setLoading(false);
-
+          }
         }
 
       },
         (error) => {
           console.log(error);
-          showAlert("", "error")
+          if (error.response.data.message === "EMAIL_ID_EMPTY" || error.response.data.message === "REQD_PARAMS_NOT_PROVIDED") {
+            showAlert("Please provide email ID", "error");
           setShowVerifyOTPPwdResetDetails(false);
           setShowEmailForForgotPwdForm(true);
           setShowResetPwdForm(false);
           setLoading(false);
-
+          }
+          else if (error.response.data.message === "USER_DOESNT_EXISTS") {
+            showAlert("ID not found.Please register", "error");
+            setShowVerifyOTPPwdResetDetails(false);
+            setShowEmailForForgotPwdForm(false);
+            setShowResetPwdForm(false);
+            handleSwitchToRegister();
+            setLoading(false);
+  
+          }
         })
 
 
@@ -611,37 +643,69 @@ function PreLogin() {
     event.preventDefault();
     setLoading(true);
     console.log(otp);
-    var concatOTP = '';
+    var dummyvar = '';
     otp.map(x => {
-      concatOTP += x;
+      dummyvar += x;
     })
-    console.log(concatOTP);
-    if (concatOTP === "") {
+    setConcatOTPForPwdReset(dummyvar);
+    console.log(concatOTPForPwdReset);
+
+    console.log(dummyvar);
+    if (dummyvar === "") {
 
       showAlert("OTP is mandatory", "error");
       setLoading(false);
     }
 
     else {
-      UAMApi.verifyOTPForForgotPassword(concatOTP, (response) => {
+      const reqData = {
+        "emailId": email,
+        "token": dummyvar,
+      }
+      UAMApi.verifyOTPForForgotPassword(reqData, (response) => {
         console.log(response);
         if (response) {
+          if (response.data.message === "VERIFIED_SUCCESSFULLY") {
+
           showAlert("OTP verified successfully. You can reset your password now", "success");
           setShowVerifyOTPPwdResetDetails(false);
           setShowEmailForForgotPwdForm(false);
           setShowResetPwdForm(true);
           setLoading(false);
-
+          }
         }
 
       },
         (error) => {
           console.log(error);
-          showAlert("", "error");
-          setShowVerifyOTPPwdResetDetails(true);
+          if (error.response.data.message === "USER_DOESNT_EXISTS") {
+            setOtp(['', '', '', '', '', '']);
+            showAlert("ID not fpond.Please register", "error");
+
+          setShowVerifyOTPPwdResetDetails(false);
           setShowEmailForForgotPwdForm(false);
           setShowResetPwdForm(false);
+          handleSwitchToRegister();
           setLoading(false);
+          }
+          else if (error.response.data.message === "TOKEN_EXPIRED") {
+            setOtp(['', '', '', '', '', '']);
+            showAlert("OTP expired.Please generate again", "error");
+            setShowVerifyOTPPwdResetDetails(false);
+            setShowEmailForForgotPwdForm(true);
+            setShowResetPwdForm(false);
+              setLoading(false);
+  
+          }
+          else if (error.response.data.message === "INVALID_TOKEN_OR_EMAIL") {
+            setOtp(['', '', '', '', '', '']);
+            showAlert("Invalid/incorrect OTP provided.Please enter again", "error");
+            setShowVerifyOTPPwdResetDetails(false);
+            setShowEmailForForgotPwdForm(false);
+            setShowResetPwdForm(false);
+            setLoading(false);
+  
+          }
 
         })
 
