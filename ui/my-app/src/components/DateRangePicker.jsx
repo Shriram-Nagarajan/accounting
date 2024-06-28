@@ -9,8 +9,9 @@ import dayjs from 'dayjs';
 function DateRangePickerComponent(props) {
     return (
         <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <Box sx={{ display: 'flex', }}>
+            <Box sx={{ display: 'flex', width:'100%'}}>
                 <DatePicker
+                sx={{ width: '100% !important' }}
                     label={props.label}
                     value={props.value ? dayjs(props.value) : null}
                     onChange={(newValue) => {
@@ -21,7 +22,7 @@ function DateRangePickerComponent(props) {
                     renderInput={(params) => (
                         <TextField
                             {...params}
-                            sx={{ width: '100%' }}
+                            sx={{ width: '100% !important' }}
                             error={props.error}
                             helperText={props.helperText}
                         />

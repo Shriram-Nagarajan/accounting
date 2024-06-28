@@ -566,14 +566,14 @@ function ExpenseFileUploadForm() {
                   // required
                 /> */}
                 
-                <DateRangePickerComponent xs={12} md={6}
+                <DateRangePickerComponent 
                   label="Date"
                   value={ExpenseFormData.date}
                   onChange={handleExpenseInputChange}
                   fullWidth
                   error={!!formErrors.date}
                   helperText={formErrors.date}
-                  
+                  sx={{width:'100%'}}
                 />
 
                 <TextField
@@ -659,11 +659,16 @@ function ExpenseFileUploadForm() {
                     <Button variant="contained" color="primary" type="button" fullWidth onClick={handleAddExpenseClick}>Add Expense</Button>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Badge color="primary" badgeContent={ExpenseCount}>
                       <Button variant="contained" color="secondary" type="button" fullWidth onClick={handlePreviewExpenseClick}>
                         Preview & Save
+                        <Badge color="primary" badgeContent={ExpenseCount} anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        style={{ position: 'absolute', top: 3, right: 3 }}>
+                        </Badge>
+
                       </Button>
-                    </Badge>
                   </Grid>
                   </Grid>
                 </Box>
@@ -733,11 +738,16 @@ function ExpenseFileUploadForm() {
                     <Button variant="contained" color="primary" type="button" fullWidth onClick={handleAddIncomeClick}>Add Income</Button>
                   </Grid>
                   <Grid item xs={12} md={6}>
-                    <Badge color="primary" badgeContent={IncomeCount}>
+                    
                       <Button variant="contained" color="secondary" type="button" fullWidth onClick={handlePreviewIncomeClick}>
                         Preview & Save
+                        <Badge color="primary" badgeContent={IncomeCount} anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+        style={{ position: 'absolute', top: 3, right: 3 }}></Badge>
                       </Button>
-                    </Badge>
+                    {/* </Badge> */}
                   </Grid>
                   </Grid>
                 </Box>

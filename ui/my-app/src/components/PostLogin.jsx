@@ -30,18 +30,18 @@ function PostLogin(props) {
     const userName = useSelector(state => state.auth.userName)// assuming you store user info in Redux state
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    // useEffect(() => {
-    //     const currentPath = window.location.pathname;
-    //     console.log(currentPath);
-    //     console.log(props.startPage);
-    //     if (props.startPage && currentPath !== props.startPage) {
-    //         navigate(props.startPage);
-    //     }
-    //     // if (props.startPage && currentPath === "/") {
-    //     //     navigate(props.startPage);
-    //     // }
+    useEffect(() => {
+        const currentPath = window.location.pathname;
+        // console.log(currentPath);
+        // console.log(props.startPage);
+        if (props.startPage && currentPath !== props.startPage) {
+            navigate(props.startPage);
+        }
+        // if (props.startPage && currentPath === "/") {
+        //     navigate(props.startPage);
+        // }
         
-    // }, []);
+    }, []);
     
     const [mobileOpen, setMobileOpen] = useState(false);
     const [drawerOpen, setDrawerOpen] = useState(true);

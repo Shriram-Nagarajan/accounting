@@ -47,6 +47,7 @@ function Footer({ drawerOpen }) {
                             <Link href="/expense-insights" color="inherit" variant="body2" underline="none">
                                 Expense Insights
                             </Link>
+                            <br/>
                             <Link href="/income-insights" color="inherit" variant="body2" underline="none">
                                 Income Insights
                             </Link>
