@@ -497,12 +497,10 @@ function PreLogin() {
     }
     else {
       const reqData = {
-        "userId": email,
-        "name": registerInputs.fullName,
-        "emailId": email,
-        "token": concatOTPForRegister,
-        "password": registerInputs.password,
-        "confirmPassword": registerInputs.confirmPassword,
+        "authenticationId" : email,
+        "token": concatOTPForPwdReset,
+        "newPassword" :forgotpwdInputs.password,
+        "confirmPassword" :forgotpwdInputs.confirmPassword,
     }
       UAMApi.resetPassword(reqData, (response) => {
         console.log(response)
@@ -518,7 +516,7 @@ function PreLogin() {
       }, (errorResponse) => {
         console.log(errorResponse);
         setLoading(false);
-        if (errorResponse.response.data.message === "USER_DOESNT_EXISTS") {
+        if (errorResponse.response.data.message === "USER_DOESNT_EXIST") {
           showAlert("ID not found.Please register", "error");
           handleSwitchToRegister();
           setLoading(false);
@@ -598,8 +596,8 @@ function PreLogin() {
     }
     else {
       const reqData = {
-        "emailId": email,
-      }
+        "authenticationId" : email
+            }
       UAMApi.sendOTPForForgotPassword(reqData, (response) => {
         console.log(response);
         if (response) {
@@ -623,7 +621,7 @@ function PreLogin() {
           setShowResetPwdForm(false);
           setLoading(false);
           }
-          else if (error.response.data.message === "USER_DOESNT_EXISTS") {
+          else if (error.response.data.message === "USER_DOESNT_EXIST") {
             showAlert("ID not found.Please register", "error");
             setShowVerifyOTPPwdResetDetails(false);
             setShowEmailForForgotPwdForm(false);
@@ -659,9 +657,9 @@ function PreLogin() {
 
     else {
       const reqData = {
-        "emailId": email,
         "token": dummyvar,
-      }
+        "authenticationId": email
+    }
       UAMApi.verifyOTPForForgotPassword(reqData, (response) => {
         console.log(response);
         if (response) {
@@ -678,9 +676,9 @@ function PreLogin() {
       },
         (error) => {
           console.log(error);
-          if (error.response.data.message === "USER_DOESNT_EXISTS") {
+          if (error.response.data.message === "USER_DOESNT_EXIST") {
             setOtp(['', '', '', '', '', '']);
-            showAlert("ID not fpond.Please register", "error");
+            showAlert("ID not found.Please register", "error");
 
           setShowVerifyOTPPwdResetDetails(false);
           setShowEmailForForgotPwdForm(false);
@@ -700,7 +698,7 @@ function PreLogin() {
           else if (error.response.data.message === "INVALID_TOKEN_OR_EMAIL") {
             setOtp(['', '', '', '', '', '']);
             showAlert("Invalid/incorrect OTP provided.Please enter again", "error");
-            setShowVerifyOTPPwdResetDetails(false);
+            setShowVerifyOTPPwdResetDetails(true);
             setShowEmailForForgotPwdForm(false);
             setShowResetPwdForm(false);
             setLoading(false);

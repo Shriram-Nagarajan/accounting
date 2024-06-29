@@ -1,5 +1,5 @@
 import React, { useEffect,useState } from 'react';
-import { Routes, Route,useNavigate  } from 'react-router-dom';
+import { Routes, Route,useNavigate ,Link as RouterLink } from 'react-router-dom';
 import { CssBaseline, Box, Toolbar, Typography, Container, AppBar, IconButton, Drawer, List, ListItemButton, ListItemText, Divider } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import WestRoundedIcon from '@mui/icons-material/WestRounded';
@@ -30,18 +30,18 @@ function PostLogin(props) {
     const userName = useSelector(state => state.auth.userName)// assuming you store user info in Redux state
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    // useEffect(() => {
-    //     const currentPath = window.location.pathname;
-    //     console.log(currentPath);
-    //     console.log(props.startPage);
-    //     if (props.startPage && currentPath !== props.startPage) {
-    //         navigate(props.startPage);
-    //     }
-    //     // if (props.startPage && currentPath === "/") {
-    //     //     navigate(props.startPage);
-    //     // }
+    useEffect(() => {
+        const currentPath = window.location.pathname;
+        // console.log(currentPath);
+        // console.log(props.startPage);
+        if (props.startPage && currentPath !== props.startPage) {
+            navigate(props.startPage);
+        }
+        // if (props.startPage && currentPath === "/") {
+        //     navigate(props.startPage);
+        // }
         
-    // }, []);
+    }, []);
     
     const [mobileOpen, setMobileOpen] = useState(false);
     const [drawerOpen, setDrawerOpen] = useState(true);
@@ -94,7 +94,7 @@ function PostLogin(props) {
             </Toolbar>
             <Divider />
             
-            <List>
+            {/* <List>
                 <ListItemButton component={Link} to="/home">
                     <HomeRoundedIcon color="action" fontSize="large" />&nbsp;<ListItemText primary="Home" />
                 </ListItemButton>
@@ -106,6 +106,20 @@ function PostLogin(props) {
                 </ListItemButton>
                 <ListItemButton component={Link} to="/income-insights">
                     <MoneyRoundedIcon color="action" fontSize="large"/>&nbsp;<ListItemText primary="Income Insights" />
+                </ListItemButton>
+            </List> */}
+            <List>
+                <ListItemButton component={RouterLink} to="/home">
+                    <HomeRoundedIcon color="action" fontSize="large" />&nbsp;<ListItemText primary="Home" />
+                </ListItemButton>
+                <ListItemButton component={RouterLink} to="/file-upload">
+                    <InputRoundedIcon color="action" fontSize="large" />&nbsp;<ListItemText primary="File Upload" />
+                </ListItemButton>
+                <ListItemButton component={RouterLink} to="/expense-insights">
+                    <InsightsRoundedIcon color="action" fontSize="large" />&nbsp;<ListItemText primary="Expense Insights" />
+                </ListItemButton>
+                <ListItemButton component={RouterLink} to="/income-insights">
+                    <MoneyRoundedIcon color="action" fontSize="large" />&nbsp;<ListItemText primary="Income Insights" />
                 </ListItemButton>
             </List>
         </div>
