@@ -143,8 +143,8 @@ function ExpenseFileUploadForm() {
 
   const handleDownload = () => {
     const link = document.createElement('a');
-    link.href = '../template.xlsx';
-    link.setAttribute('download', 'template.xlsx');
+    link.href = '../transactions.xlsx';
+    link.setAttribute('download', 'transactions.xlsx');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
