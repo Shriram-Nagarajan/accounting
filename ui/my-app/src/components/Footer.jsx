@@ -1,8 +1,21 @@
-import React from 'react';
+import React,{useState} from 'react';
 import { Box, Container, Grid, Link, Typography,Link as MuiLink } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-
+import TermsModal from '../components/TermsModal';
 function Footer({ drawerOpen }) {
+    const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  const termsContent = `
+    These are the terms of use for our application. By using this application, you agree to the following terms...
+  `;
     const footerStyle = {
         width: drawerOpen ? { sm: `calc(100% - 240px)` } : '100%', // Adjust width based on drawer state
         backgroundColor: 'primary.main',
@@ -80,12 +93,19 @@ function Footer({ drawerOpen }) {
                             </Typography>
                         </Grid>
                     </Grid>
+                   
                     <Box mt={4} textAlign="center">
+                    
                         <Typography variant="body2" color="inherit">
                             © {new Date().getFullYear()} Freedom. All rights reserved.
                         </Typography>
+                        {/* <Typography variant="body2" color="inherit">
+                        <a href='#' onClick={handleClickOpen}>Terms of use</a>
+                           
+                        </Typography> */}
                     </Box>
                     </Box>
+                    <TermsModal open={open} handleClose={handleClose} termsContent={termsContent} />
                     </Box>
     // </Container>
     //         </Box>
