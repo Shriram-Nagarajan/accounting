@@ -1,5 +1,6 @@
 import React from 'react';
-import { Box, Container, Grid, Link, Typography } from '@mui/material';
+import { Box, Container, Grid, Link, Typography,Link as MuiLink } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 
 function Footer({ drawerOpen }) {
     const footerStyle = {
@@ -36,7 +37,7 @@ function Footer({ drawerOpen }) {
                             <Typography variant="h6" gutterBottom>
                                 Quick Links
                             </Typography>
-                            <Link href="/home" color="inherit" variant="body2" underline="none">
+                            {/* <Link href="/home" color="inherit" variant="body2" underline="none">
                                 Home
                             </Link>
                             <br />
@@ -50,7 +51,22 @@ function Footer({ drawerOpen }) {
                             <br/>
                             <Link href="/income-insights" color="inherit" variant="body2" underline="none">
                                 Income Insights
-                            </Link>
+                            </Link> */}
+                            <MuiLink component={RouterLink} to="/home" color="inherit" variant="body2" underline="none">
+                            Home
+                        </MuiLink>
+                        <br />
+                        <MuiLink component={RouterLink} to="/file-upload" color="inherit" variant="body2" underline="none">
+                            File Upload
+                        </MuiLink>
+                        <br />
+                        <MuiLink component={RouterLink} to="/expense-insights" color="inherit" variant="body2" underline="none">
+                            Expense Insights
+                        </MuiLink>
+                        <br />
+                        <MuiLink component={RouterLink} to="/income-insights" color="inherit" variant="body2" underline="none">
+                            Income Insights
+                        </MuiLink>
                         </Grid>
                         <Grid item xs={12} sm={4}>
                             <Typography variant="h6" gutterBottom>
