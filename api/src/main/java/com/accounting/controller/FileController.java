@@ -22,6 +22,7 @@ import com.accounting.handler.FileHandler;
 import com.accounting.handler.TransactionsHandler;
 import com.accounting.model.ApiResponse;
 import com.accounting.model.TransactionRecord;
+import com.common.exception.ValidationException;
 
 @RestController
 public class FileController {
@@ -43,7 +44,7 @@ public class FileController {
 	
 	@PostMapping("/upload")
 	public ResponseEntity<ApiResponse> upload(@RequestParam("file") MultipartFile file,
-			@RequestParam(required = false) Boolean deleteExisting) {
+			@RequestParam(required = false) Boolean deleteExisting) throws ValidationException {
 
 		if(deleteExisting == null) {
 			deleteExisting = Boolean.TRUE;

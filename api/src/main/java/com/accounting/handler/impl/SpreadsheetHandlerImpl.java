@@ -36,11 +36,13 @@ import com.accounting.handler.FileHandler;
 import com.accounting.handler.TransactionsHandler;
 import com.accounting.model.ExpenseDetails;
 import com.accounting.model.TransactionRecord;
+import com.common.exception.ValidationException;
 
 @Service
 public class SpreadsheetHandlerImpl implements FileHandler{
 
 	private static final String SPREADSHEET_ALLOWED_EXTN = "spreadsheet.allowed.extensions";
+	private static final String SPREADSHEET_MANDATORY_HEADERS = "spreadsheet.mandatory.headers";
 	
 	private final Environment env;
 	
@@ -79,7 +81,7 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 	}
 	
 	@Override
-	public List<TransactionRecord> parseData(String filePath) {
+	public List<TransactionRecord> parseData(String filePath) throws ValidationException {
 		Map<String, Integer> columnMapping = new HashMap<String, Integer>();
 		List<TransactionRecord> txnRecords = new ArrayList<TransactionRecord>();
 
@@ -87,8 +89,11 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 		try {
 			workbook = WorkbookFactory.create(new File(filePath));
 			Sheet sheet = workbook.getSheetAt(0); // Assuming the first sheet
+			
 			// Assuming headers are in the first row
-			Row headerRow = sheet.getRow(1);
+			Row headerRow = sheet.getRow(0);
+			validateHeaders(headerRow);
+			
 			if (headerRow != null) {
 				int columnCount = headerRow.getLastCellNum();
 				for (int i = 0; i < columnCount; i++) {
@@ -101,7 +106,7 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 				}
 			}
 
-			for (int rowNum = 3; rowNum < sheet.getPhysicalNumberOfRows(); rowNum++) {
+			for (int rowNum = 1; rowNum < sheet.getPhysicalNumberOfRows(); rowNum++) {
 				Row row = sheet.getRow(rowNum);
 
 				if(isValidRow(row, columnMapping)) {
@@ -135,14 +140,14 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 					txnRecord.setDescription(descCell.getStringCellValue());
 
 					// Format the cell value
-					Cell txnRefNumCell = row.getCell(columnMapping.get("Chq./Ref.No."));
+					Cell txnRefNumCell = row.getCell(columnMapping.get("Cheque / Reference no."));
 					String txnRefNum = txnRefNumCell.getCellType() == CellType.NUMERIC
 							? String.valueOf(Double.valueOf(txnRefNumCell.getNumericCellValue()).longValue())
 							: txnRefNumCell.getStringCellValue();
 					txnRecord.setTxnRefNumber(txnRefNum);
 
-					Cell wdAmtCell = row.getCell(columnMapping.get("Withdrawal Amt."));
-					Cell depAmtCell = row.getCell(columnMapping.get("Deposit Amt."));
+					Cell wdAmtCell = row.getCell(columnMapping.get("Withdrawal Amount"));
+					Cell depAmtCell = row.getCell(columnMapping.get("Deposit Amount"));
 
 					boolean creditTxn = depAmtCell != null && depAmtCell.getNumericCellValue() != 0.0;
 					boolean debitTxn = wdAmtCell != null && wdAmtCell.getNumericCellValue() != 0.0;
@@ -185,7 +190,7 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 		if(row == null) {
 			return false;
 		}
-		Cell txnRefNumCell = row.getCell(columnMapping.get("Chq./Ref.No."));
+		Cell txnRefNumCell = row.getCell(columnMapping.get("Cheque / Reference no."));
 		if(txnRefNumCell == null) {
 			return false;
 		}	else {
@@ -196,8 +201,8 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 				return false;
 			}
 			
-			Cell wdAmtCell = row.getCell(columnMapping.get("Withdrawal Amt."));
-			Cell depAmtCell = row.getCell(columnMapping.get("Deposit Amt."));
+			Cell wdAmtCell = row.getCell(columnMapping.get("Withdrawal Amount"));
+			Cell depAmtCell = row.getCell(columnMapping.get("Deposit Amount"));
 
 			boolean creditTxn = depAmtCell != null && depAmtCell.getNumericCellValue() != 0.0;
 			boolean debitTxn = wdAmtCell != null && wdAmtCell.getNumericCellValue() != 0.0;
@@ -209,10 +214,28 @@ public class SpreadsheetHandlerImpl implements FileHandler{
 		return true;
 	}
 	
+	
 	private boolean isAllowed(MultipartFile file) {
 		var allowedExtn = getAllowedExtensions();
 		return !(allowedExtn == null || allowedExtn.isEmpty()) && 
 			allowedExtn.contains(getFileExtension(file.getOriginalFilename()));
+	}
+	
+	private void validateHeaders(Row headerRow) throws ValidationException {
+		int columnCount = headerRow.getLastCellNum();
+		String mandatoryHeadersCsv = env.getProperty(SPREADSHEET_MANDATORY_HEADERS);
+		
+		List<String> mandatoryHeaders = List.of(mandatoryHeadersCsv.split(","));
+		
+		for (int i = 0; i < columnCount; i++) {
+			Cell cell = headerRow.getCell(i);
+			if (cell != null && !cell.getStringCellValue().isBlank()) {
+				String value = cell.getStringCellValue();
+				if(!mandatoryHeaders.contains(value)) {
+					throw new ValidationException("Invalid value provided for header: "+ value +"Allowed header values are " + mandatoryHeadersCsv);
+				}
+			}
+		}
 	}
 	
 	private List<String> getAllowedExtensions() {
