@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 
 import com.common.model.User;
 import com.common.model.UserDetails;
+import com.um.accounting.entity.AccountDetails;
+import com.um.accounting.entity.UserAccountId;
+import com.um.accounting.entity.UserAccountMapping;
 import com.um.entity.AuthenticationType;
 import com.um.entity.RegistrationToken;
 import com.um.entity.RegistrationTokenStatus;
@@ -30,6 +33,9 @@ import com.um.util.PasswordValidator;
 import com.um.util.TextUtil;
 import com.um.util.TokenUtil;
 
+import jakarta.persistence.EntityManager;
+import jakarta.transaction.Transactional;
+
 @Service("email"+RegistrationHandler.BEAN_SUFFIX)
 public class EmailRegistrationHandler implements RegistrationHandler {
 	
@@ -37,17 +43,20 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 	
 	private EmailService emailService;
 	private UserRepository userRepository;
+	private EntityManager accountingEntityManagerFactory;
 	private RegistrationTokenRepository tokenRepository;
 	private PasswordValidator passwordValidator;
 	private Environment env;
 	
 	public EmailRegistrationHandler(@Qualifier("simpleMailService") EmailService emailService,
 			UserRepository userRepository,
+			@Qualifier("accountingEntityManagerFactory") EntityManager accountingEntityManagerFactory,
 			RegistrationTokenRepository tokenRepository,
 			@Qualifier("bCryptPasswordValidator") PasswordValidator passwordValidator,
 			Environment env) {
 		this.emailService = emailService;
 		this.userRepository = userRepository;
+		this.accountingEntityManagerFactory = accountingEntityManagerFactory;
 		this.tokenRepository = tokenRepository;
 		this.passwordValidator = passwordValidator;
 		this.env = env;
@@ -149,6 +158,7 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 	}
 
 	@Override
+	@Transactional
 	public RegistrationResponse registerUser(RegistrationRequest request) {
 		
 		RegistrationResponse registrationResponse = null;
@@ -190,6 +200,19 @@ public class EmailRegistrationHandler implements RegistrationHandler {
 										User user = new User();
 										UserDetails userDetails = userEntity.getUserDetails();
 										user.setUserDetails(userDetails);
+										
+										//TODO: Fetch this data from user later
+										int accountNumberLength = Integer.parseInt(env.getProperty("account-number.default.length"));
+										AccountDetails accountDetails = new AccountDetails();
+										accountDetails.setAccountNumber(TokenUtil.generateRandomToken(accountNumberLength));
+										accountDetails.setName(userEntity.getName());
+										accountingEntityManagerFactory.persist(accountDetails);
+										
+										UserAccountId userAccountId = new UserAccountId();
+										userAccountId.setAccountId(accountDetails.getAccountId());
+										userAccountId.setUserId(userEntity.getUserId());
+										UserAccountMapping userAccountMapping = new UserAccountMapping(userAccountId);
+										accountingEntityManagerFactory.persist(userAccountMapping);
 										
 										registrationResponse = RegistrationResponse.registrationSuccess(user);
 										

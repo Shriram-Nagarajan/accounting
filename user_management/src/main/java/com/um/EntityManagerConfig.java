@@ -5,6 +5,7 @@ import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -46,4 +47,21 @@ public class EntityManagerConfig {
         return new JpaTransactionManager(authDbEntityManagerFactory);
     }
 
+
+	@Primary
+	@Bean("accountingEntityManagerFactory")
+    LocalContainerEntityManagerFactoryBean accountingEntityManagerFactory(@Qualifier("accountsDataSource") DataSource accountsDataSource) {
+    	LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
+    	bean.setPackagesToScan("com.um.accounting.entity");
+    	bean.setDataSource(accountsDataSource);
+    	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+    	return bean;
+    }
+    
+	@Primary
+    @Bean("accountingTransactionManager")
+    public PlatformTransactionManager accountingTransactionManager(@Qualifier("accountingEntityManagerFactory") EntityManagerFactory accountingEntityManagerFactory) {
+        return new JpaTransactionManager(accountingEntityManagerFactory);
+    }
+	
 }

@@ -10,6 +10,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -62,6 +63,18 @@ public class UserManagement {
         dataSource.setUrl(env.getProperty("authDatasource.url"));
         dataSource.setUsername(env.getProperty("authDatasource.username"));
         dataSource.setPassword(env.getProperty("authDatasource.password"));
+        return dataSource;
+	}
+    
+    
+    @Primary
+    @Bean("accountsDataSource")
+    DataSource accountsDataSource() {
+        DriverManagerDataSource dataSource = new DriverManagerDataSource();
+        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+        dataSource.setUrl("jdbc:mysql://localhost:3306/accounts");
+        dataSource.setUsername("root");
+        dataSource.setPassword("root");
         return dataSource;
 	}
     
