@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS accounts.`transactions` (
     `reversal_txn` BOOL NOT NULL,
     PRIMARY KEY (`transaction_id`),
     INDEX `idx_transaction_ref_num` (`transaction_ref_num`),
-    INDEX `idx_transaction_date` (`transaction_date`)
+    INDEX `idx_transaction_date` (`transaction_date`),
 	CONSTRAINT `fk_account_id` FOREIGN KEY (`account_id`) REFERENCES `account_details` (`account_id`)
 )  DEFAULT CHARSET=UTF8MB4 COLLATE = UTF8MB4_UNICODE_CI;
 

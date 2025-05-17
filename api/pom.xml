@@ -10,7 +10,7 @@
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.accounting</groupId>
-	<artifactId>accounting</artifactId>
+	<artifactId>api</artifactId>
 	<version>0.1</version>
 	<name>accounting</name>
 	<description>Accounting</description>

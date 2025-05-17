@@ -74,7 +74,7 @@ public class UserManagement {
         dataSource.setDriverClassName("com.mysql.jdbc.Driver");
         dataSource.setUrl("jdbc:mysql://localhost:3306/accounts");
         dataSource.setUsername("root");
-        dataSource.setPassword("root");
+        dataSource.setPassword("root1234");
         return dataSource;
 	}
     
@@ -102,5 +102,22 @@ public class UserManagement {
 			}
 		};
 	}
-    
+
+	@Bean
+	public CommandLineRunner checkEnvironment(ApplicationContext ctx) {
+		return args -> {
+			Environment env = ctx.getEnvironment();
+
+			// Check which properties files are loaded
+			System.out.println("Active profiles: " + String.join(", ", env.getActiveProfiles()));
+
+			// Check database properties
+			System.out.println("Database URL: " + env.getProperty("spring.datasource.url"));
+			System.out.println("Database username: " + env.getProperty("spring.datasource.username"));
+			System.out.println("Hibernate dialect: " + env.getProperty("spring.jpa.properties.hibernate.dialect"));
+
+			// If these print as null, it means the properties aren't being loaded correctly
+		};
+	}
+
 }

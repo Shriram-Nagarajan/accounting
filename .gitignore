@@ -8,6 +8,7 @@ common/.factorypath
 common/.project
 common/.settings/
 sample_files/
+file_writes/
 user_management/.factorypath
 user_management/.settings/
 
@@ -18,4 +19,4 @@ ui/my-app/node-modules/
 **/classes/
 **/bin/
 **/target/
-
+*.iml

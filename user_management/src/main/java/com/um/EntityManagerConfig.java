@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.core.env.Environment;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
@@ -18,12 +19,27 @@ import jakarta.persistence.EntityManagerFactory;
 @EnableTransactionManagement
 public class EntityManagerConfig {
 
+    private final Environment env;
+
+    public EntityManagerConfig(Environment env) {
+        this.env = env;
+    }
+
+    private java.util.Properties getHibernateProperties() {
+        java.util.Properties properties = new java.util.Properties();
+        properties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
+        properties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
+        properties.setProperty("hibernate.show_sql", env.getProperty("hibernate.show_sql"));
+        return properties;
+    }
+
     @Bean("entityManagerFactory")
     LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("userDataSource") DataSource userDataSource) {
     	LocalContainerEntityManagerFactoryBean bean = new LocalContainerEntityManagerFactoryBean();
     	bean.setPackagesToScan("com.um.entity");
     	bean.setDataSource(userDataSource);
     	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+    	bean.setJpaProperties(getHibernateProperties());
     	return bean;
     }
     
@@ -39,6 +55,7 @@ public class EntityManagerConfig {
     	bean.setPackagesToScan("com.um.auth.entity");
     	bean.setDataSource(authDataSource);
     	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+    	bean.setJpaProperties(getHibernateProperties());
     	return bean;
     }
     
@@ -55,6 +72,7 @@ public class EntityManagerConfig {
     	bean.setPackagesToScan("com.um.accounting.entity");
     	bean.setDataSource(accountsDataSource);
     	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+    	bean.setJpaProperties(getHibernateProperties());
     	return bean;
     }
     
@@ -63,5 +81,4 @@ public class EntityManagerConfig {
     public PlatformTransactionManager accountingTransactionManager(@Qualifier("accountingEntityManagerFactory") EntityManagerFactory accountingEntityManagerFactory) {
         return new JpaTransactionManager(accountingEntityManagerFactory);
     }
-	
 }

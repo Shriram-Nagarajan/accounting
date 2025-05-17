@@ -1,5 +1,8 @@
 package com.accounting;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -18,6 +21,14 @@ import jakarta.persistence.EntityManagerFactory;
 @EnableTransactionManagement
 public class EntityManagerConfig {
 
+    private Map<String, Object> getJpaProperties() {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect");
+        properties.put("hibernate.hbm2ddl.auto", "update");
+        properties.put("hibernate.show_sql", "true");
+        return properties;
+    }
+
 	@Primary
 	@Bean("entityManagerFactory")
     LocalContainerEntityManagerFactoryBean entityManagerFactory(@Qualifier("accountsDataSource") DataSource accountsDataSource) {
@@ -25,6 +36,7 @@ public class EntityManagerConfig {
     	bean.setPackagesToScan("com.accounting.entity");
     	bean.setDataSource(accountsDataSource);
     	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+    	bean.setJpaPropertyMap(getJpaProperties());
     	return bean;
     }
     
@@ -41,6 +53,7 @@ public class EntityManagerConfig {
     	bean.setPackagesToScan("com.accounting.auth.entity");
     	bean.setDataSource(authDataSource);
     	bean.setJpaVendorAdapter(new HibernateJpaVendorAdapter());
+    	bean.setJpaPropertyMap(getJpaProperties());
     	return bean;
     }
     
