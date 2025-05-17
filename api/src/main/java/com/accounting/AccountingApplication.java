@@ -49,12 +49,12 @@ public class AccountingApplication {
   
     @Primary
     @Bean("accountsDataSource")
-    DataSource accountsDataSource() {
+    DataSource accountsDataSource(Environment env) {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-        dataSource.setUrl("jdbc:mysql://localhost:3306/accounts");
-        dataSource.setUsername("root");
-        dataSource.setPassword("root1234");
+        dataSource.setDriverClassName(env.getProperty("spring.datasource.driver-class-name"));
+        dataSource.setUrl(env.getProperty("spring.datasource.url"));
+        dataSource.setUsername(env.getProperty("spring.datasource.username"));
+        dataSource.setPassword(env.getProperty("spring.datasource.password"));
         return dataSource;
 	}
     
