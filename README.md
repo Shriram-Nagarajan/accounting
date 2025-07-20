@@ -33,6 +33,7 @@ Before you begin, ensure you have met the following requirements:
 - MySQL
 - Maven
 - Memcached
+- Python 3.7+ (for AI-based expense categorization)
 
 ## Installation
 
@@ -99,6 +100,28 @@ cd accounting
 
     ```bash
     npm start
+    ```
+
+### Python AI Categorization Setup
+
+For automated expense categorization using machine learning:
+
+1. Install required Python packages:
+
+    ```bash
+    pip install pandas numpy scikit-learn matplotlib seaborn openpyxl
+    ```
+
+2. Navigate to the Python directory:
+
+    ```bash
+    cd python
+    ```
+
+3. Train the model and categorize expenses:
+
+    ```bash
+    python predict_expense_categories.py path/to/your/expenses.csv
     ```
 
 ## Usage
