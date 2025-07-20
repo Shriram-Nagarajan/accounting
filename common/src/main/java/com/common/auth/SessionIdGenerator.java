@@ -67,7 +67,7 @@ public class SessionIdGenerator {
 		 * (ParseException | JOSEException e) { // TODO Auto-generated catch block
 		 * e.printStackTrace(); return false; }
 		 */
-		return sessionId != null && !sessionId.isBlank();
+		return sessionId != null && !sessionId.trim().isEmpty();
         
 	}
 	

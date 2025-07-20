@@ -1,3 +1,4 @@
+.idea
 api/target
 api/.classpath
 api/.project
@@ -20,3 +21,5 @@ ui/my-app/node-modules/
 **/bin/
 **/target/
 *.iml
+**/*.pkl
+**/*.claude
